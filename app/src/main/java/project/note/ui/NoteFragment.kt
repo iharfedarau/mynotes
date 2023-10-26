@@ -19,10 +19,15 @@ class NoteFragment(private val note: Note): Fragment() {
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
+    ): View {
         binding = NoteFragmentLayoutBinding.inflate(inflater, container, false)
         binding.title.setText(note.title)
         binding.content.setText(note.content)
+
+        binding.delete.setOnClickListener {
+            setFragmentResult("deleteNoteRequestKey",
+                bundleOf("bundleDeleteNoteKey" to note.id))
+        }
 
         binding.save.setOnClickListener {
             setFragmentResult("saveNoteRequestKey",

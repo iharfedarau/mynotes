@@ -8,7 +8,6 @@ import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
-import androidx.lifecycle.Observer
 import androidx.viewpager2.adapter.FragmentStateAdapter
 import project.note.NoteApplication
 import project.note.data.Note
@@ -23,37 +22,36 @@ class NotesFragment : Fragment() {
     private val noteViewModel: NoteViewModel by viewModels {
         NoteViewModelFactory((activity?.application as NoteApplication).repository)
     }
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-    }
-
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
+    ): View {
         binding = NotesFragmentLayoutBinding.inflate(inflater, container, false)
 
         adapter = ScreenSlidePagerAdapter(emptyList(), this)
         binding.pager.adapter = adapter
 
-        noteViewModel.allNotes.observe(viewLifecycleOwner, Observer { list ->
-            adapter = ScreenSlidePagerAdapter(list, this)
-            binding.pager.adapter = adapter
-        })
+        noteViewModel.allNotes.observe(viewLifecycleOwner) { list ->
+            // Insertion
+            if (adapter.itemCount > 0 && adapter.itemCount < list.size) {
+                adapter.updateItems(list)
+                binding.pager.currentItem = list.size - 1
+            } else {
+                adapter.updateItems(list)
+            }
+
+        }
 
         binding.insert.setOnClickListener {
             noteViewModel.insert(Note("", ""))
         }
 
-        binding.delete.setOnClickListener {
-            if (adapter.notes.size > 0) {
-                noteViewModel.delete(adapter.notes[binding.pager.currentItem].id)
-            }
+        childFragmentManager.setFragmentResultListener("deleteNoteRequestKey", viewLifecycleOwner) { _, bundle ->
+            noteViewModel.delete(bundle.getInt("bundleDeleteNoteKey"))
         }
 
-        childFragmentManager.setFragmentResultListener("saveNoteRequestKey", viewLifecycleOwner) { requestKey, bundle ->
+        childFragmentManager.setFragmentResultListener("saveNoteRequestKey", viewLifecycleOwner) { _, bundle ->
             bundle.getString("bundleSaveNoteKey")?.let {
                 val note = Json.decodeFromString<Note>(it)
                 noteViewModel.update(note)
@@ -63,11 +61,16 @@ class NotesFragment : Fragment() {
         return binding.root
     }
 
-    private inner class ScreenSlidePagerAdapter(val notes: List<Note>, fa: Fragment) :
+    private inner class ScreenSlidePagerAdapter(private var notes: List<Note>, fa: Fragment) :
         FragmentStateAdapter(fa) {
         override fun getItemCount(): Int = notes.size
 
         override fun createFragment(position: Int): Fragment =
             NoteFragment(notes[position])
+
+        fun updateItems(items: List<Note>) {
+            notes = items
+            notifyDataSetChanged()
+        }
     }
 }
