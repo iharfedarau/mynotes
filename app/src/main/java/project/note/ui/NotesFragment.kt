@@ -22,6 +22,7 @@ class NotesFragment : Fragment() {
     private val noteViewModel: NoteViewModel by viewModels {
         NoteViewModelFactory((activity?.application as NoteApplication).repository)
     }
+
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -47,11 +48,17 @@ class NotesFragment : Fragment() {
             noteViewModel.insert(Note("", ""))
         }
 
-        childFragmentManager.setFragmentResultListener("deleteNoteRequestKey", viewLifecycleOwner) { _, bundle ->
+        childFragmentManager.setFragmentResultListener(
+            "deleteNoteRequestKey",
+            viewLifecycleOwner
+        ) { _, bundle ->
             noteViewModel.delete(bundle.getInt("bundleDeleteNoteKey"))
         }
 
-        childFragmentManager.setFragmentResultListener("saveNoteRequestKey", viewLifecycleOwner) { _, bundle ->
+        childFragmentManager.setFragmentResultListener(
+            "saveNoteRequestKey",
+            viewLifecycleOwner
+        ) { _, bundle ->
             bundle.getString("bundleSaveNoteKey")?.let {
                 val note = Json.decodeFromString<Note>(it)
                 noteViewModel.update(note)
@@ -63,6 +70,16 @@ class NotesFragment : Fragment() {
 
     private inner class ScreenSlidePagerAdapter(private var notes: List<Note>, fa: Fragment) :
         FragmentStateAdapter(fa) {
+        override fun getItemId(position: Int): Long {
+            return hash(notes[position])
+        }
+
+        override fun containsItem(itemId: Long): Boolean {
+            return notes.any { note ->
+                itemId == hash(note)
+            }
+        }
+
         override fun getItemCount(): Int = notes.size
 
         override fun createFragment(position: Int): Fragment =
@@ -72,5 +89,7 @@ class NotesFragment : Fragment() {
             notes = items
             notifyDataSetChanged()
         }
+
+        private fun hash(note: Note) = note.hashCode().toLong()
     }
 }

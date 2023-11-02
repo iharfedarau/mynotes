@@ -12,7 +12,7 @@ import kotlinx.serialization.json.Json
 import project.note.data.Note
 import project.note.databinding.NoteFragmentLayoutBinding
 
-class NoteFragment(private val note: Note): Fragment() {
+class NoteFragment(private val note: Note) : Fragment() {
     private lateinit var binding: NoteFragmentLayoutBinding
 
     override fun onCreateView(
@@ -25,14 +25,26 @@ class NoteFragment(private val note: Note): Fragment() {
         binding.content.setText(note.content)
 
         binding.delete.setOnClickListener {
-            setFragmentResult("deleteNoteRequestKey",
-                bundleOf("bundleDeleteNoteKey" to note.id))
+            val id = note.id
+            setFragmentResult(
+                "deleteNoteRequestKey",
+                bundleOf("bundleDeleteNoteKey" to id)
+            )
         }
 
         binding.save.setOnClickListener {
-            setFragmentResult("saveNoteRequestKey",
-                bundleOf("bundleSaveNoteKey" to Json.encodeToString(
-                    Note(binding.title.text.toString(),  binding.content.text.toString(), note.id))))
+            setFragmentResult(
+                "saveNoteRequestKey",
+                bundleOf(
+                    "bundleSaveNoteKey" to Json.encodeToString(
+                        Note(
+                            binding.title.text.toString(),
+                            binding.content.text.toString(),
+                            note.id
+                        )
+                    )
+                )
+            )
         }
 
         return binding.root

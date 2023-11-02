@@ -7,7 +7,7 @@ plugins {
 
 android {
     namespace = "project.note"
-    compileSdk = 33
+    compileSdk = 34
 
     defaultConfig {
         applicationId = "project.note"
@@ -36,11 +36,11 @@ android {
         jvmTarget = "17"
     }
     buildFeatures {
-        compose = false
+        compose = true
         viewBinding = true
     }
     composeOptions {
-        kotlinCompilerExtensionVersion = "1.4.3"
+        kotlinCompilerExtensionVersion = "1.5.2"
     }
     packaging {
         resources {
@@ -50,6 +50,22 @@ android {
 }
 
 dependencies {
+    val composeBom = platform("androidx.compose:compose-bom:2023.10.01")
+    implementation(composeBom)
+
+    implementation("androidx.compose.ui:ui-viewbinding")
+
+
+    // Material Design 3
+    implementation("androidx.compose.material3:material3")
+
+    // Android Studio Preview support
+    implementation("androidx.compose.ui:ui-tooling-preview")
+    debugImplementation("androidx.compose.ui:ui-tooling")
+
+    // Optional - Integration with activities
+    implementation("androidx.activity:activity-compose:1.7.2")
+
     // Lifecycle
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.6.2")
     implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.6.2")
