@@ -1,4 +1,4 @@
-package project.note
+package project.note.ui
 import android.os.Bundle
 import android.view.LayoutInflater
 import androidx.activity.compose.setContent
@@ -9,6 +9,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.fragment.app.FragmentActivity
+import project.note.R
+
 class MainActivity : FragmentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

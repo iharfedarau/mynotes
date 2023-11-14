@@ -9,7 +9,7 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.setFragmentResult
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
-import project.note.data.Note
+import project.note.database.Note
 import project.note.databinding.NoteFragmentLayoutBinding
 
 class NoteFragment(private val note: Note) : Fragment() {

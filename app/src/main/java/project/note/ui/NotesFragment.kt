@@ -10,9 +10,9 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.viewpager2.adapter.FragmentStateAdapter
 import project.note.NoteApplication
-import project.note.data.Note
-import project.note.data.NoteViewModel
-import project.note.data.NoteViewModelFactory
+import project.note.database.Note
+import project.note.viewmodels.NoteViewModel
+import project.note.viewmodels.NoteViewModelFactory
 import project.note.databinding.NotesFragmentLayoutBinding
 
 class NotesFragment : Fragment() {

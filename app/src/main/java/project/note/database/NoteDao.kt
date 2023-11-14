@@ -1,4 +1,4 @@
-package project.note.data
+package project.note.database
 
 import androidx.room.Dao
 import androidx.room.Insert
@@ -13,6 +13,9 @@ interface NoteDao {
 
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun insertNote(note: Note)
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertAllNote(note: List<Note>)
 
     @Query("DELETE FROM note_table WHERE id=:id")
     suspend fun delete(id: Int)
