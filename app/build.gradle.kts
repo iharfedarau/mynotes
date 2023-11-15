@@ -5,6 +5,8 @@ plugins {
     id("kotlinx-serialization")
 }
 
+val IS_NETWORK_SERVICE_AVAILEBLE = "IS_NETWORK_SERVICE_AVAILEBLE"
+
 android {
     namespace = "project.note"
     compileSdk = 34
@@ -20,9 +22,12 @@ android {
         vectorDrawables {
             useSupportLibrary = true
         }
+
+        buildConfigField("Boolean", IS_NETWORK_SERVICE_AVAILEBLE, "false")
     }
 
     buildTypes {
+
         release {
             isMinifyEnabled = false
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
@@ -38,6 +43,7 @@ android {
     buildFeatures {
         compose = true
         viewBinding = true
+        buildConfig = true
     }
     composeOptions {
         kotlinCompilerExtensionVersion = "1.5.2"
