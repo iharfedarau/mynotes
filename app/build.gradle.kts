@@ -2,7 +2,9 @@ plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
     id("com.google.devtools.ksp")
+    kotlin("kapt")
     id("kotlinx-serialization")
+    id("com.google.dagger.hilt.android")
 }
 
 val IS_NETWORK_SERVICE_AVAILEBLE = "IS_NETWORK_SERVICE_AVAILEBLE"
@@ -14,7 +16,7 @@ android {
     defaultConfig {
         applicationId = "project.note"
         minSdk = 29
-        targetSdk = 31
+        targetSdk = 34
         versionCode = 1
         versionName = "1.0"
 
@@ -102,4 +104,14 @@ dependencies {
 
     // Splashscreen
     implementation("androidx.core:core-splashscreen:1.0.1")
+
+    //DI
+    val hiltVersion = "2.44"
+    implementation("com.google.dagger:hilt-android:$hiltVersion")
+    kapt("com.google.dagger:hilt-android-compiler:$hiltVersion")
+}
+
+// Allow references to generated code
+kapt {
+    correctErrorTypes = true
 }
