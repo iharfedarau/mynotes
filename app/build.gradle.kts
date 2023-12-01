@@ -106,9 +106,16 @@ dependencies {
     implementation("androidx.core:core-splashscreen:1.0.1")
 
     //DI
-    val hiltVersion = "2.44"
+    val hiltVersion = "2.48.1"
     implementation("com.google.dagger:hilt-android:$hiltVersion")
     kapt("com.google.dagger:hilt-android-compiler:$hiltVersion")
+
+    // For instrumentation tests
+    androidTestImplementation("com.google.dagger:hilt-android-testing:$hiltVersion")
+    kaptAndroidTest("com.google.dagger:hilt-compiler:$hiltVersion")
+    // For local unit tests
+    testImplementation("com.google.dagger:hilt-android-testing:$hiltVersion")
+    kaptTest("com.google.dagger:hilt-compiler:$hiltVersion")
 }
 
 // Allow references to generated code

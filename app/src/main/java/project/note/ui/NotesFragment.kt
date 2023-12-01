@@ -9,19 +9,16 @@ import kotlinx.serialization.json.Json
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.viewpager2.adapter.FragmentStateAdapter
-import project.note.NoteApplication
+import dagger.hilt.android.AndroidEntryPoint
 import project.note.database.Note
 import project.note.viewmodels.NoteViewModel
-import project.note.viewmodels.NoteViewModelFactory
 import project.note.databinding.NotesFragmentLayoutBinding
 
+@AndroidEntryPoint
 class NotesFragment : Fragment() {
     private lateinit var binding: NotesFragmentLayoutBinding
     private lateinit var adapter: ScreenSlidePagerAdapter
-
-    private val noteViewModel: NoteViewModel by viewModels {
-        NoteViewModelFactory((activity?.application as NoteApplication).repository)
-    }
+    private val noteViewModel: NoteViewModel by viewModels()
 
     override fun onCreateView(
         inflater: LayoutInflater,

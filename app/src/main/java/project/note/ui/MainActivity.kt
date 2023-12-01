@@ -19,6 +19,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import project.note.R
 
+@AndroidEntryPoint
 class MainActivity : FragmentActivity() {
     private var keepSplashScreen = true
     override fun onCreate(savedInstanceState: Bundle?) {

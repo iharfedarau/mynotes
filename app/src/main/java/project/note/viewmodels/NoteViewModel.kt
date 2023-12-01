@@ -2,15 +2,16 @@ package project.note.viewmodels
 
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.asLiveData
 import androidx.lifecycle.viewModelScope
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
 import project.note.database.Note
 import project.note.repository.NoteRepository
-import java.lang.IllegalArgumentException
+import javax.inject.Inject
 
-class NoteViewModel(
+@HiltViewModel
+class NoteViewModel @Inject constructor(
     private val repository: NoteRepository
 ) : ViewModel() {
     val allNotes: LiveData<List<Note>> = repository.allNotes.asLiveData()
@@ -31,16 +32,5 @@ class NoteViewModel(
         viewModelScope.launch {
             repository.refreshNotes()
         }
-    }
-}
-
-class NoteViewModelFactory(
-    private val repository: NoteRepository
-) : ViewModelProvider.Factory {
-    override fun <T : ViewModel> create(modelClass: Class<T>): T {
-        if (modelClass.isAssignableFrom(NoteViewModel::class.java)) {
-            return NoteViewModel(repository) as T
-        }
-        throw IllegalArgumentException("Unknown ViewModel class")
     }
 }
