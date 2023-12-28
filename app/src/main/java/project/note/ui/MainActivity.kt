@@ -13,10 +13,8 @@ import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import project.note.R
 
 @AndroidEntryPoint
@@ -33,11 +31,8 @@ class MainActivity : FragmentActivity() {
             }
 
         lifecycleScope.launch {
-            delay(2000)
-
-            withContext(Dispatchers.Main) {
-                keepSplashScreen = false
-            }
+            delay(500)
+            keepSplashScreen = false
         }
 
         setContent {
