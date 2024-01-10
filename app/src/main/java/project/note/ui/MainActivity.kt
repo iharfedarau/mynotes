@@ -11,6 +11,7 @@ import androidx.compose.material.Surface
 import androidx.compose.ui.Modifier
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.fragment.app.FragmentActivity
+import androidx.viewpager2.widget.ViewPager2
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
@@ -22,6 +23,7 @@ import project.note.viewmodels.NoteViewModel
 class MainActivity : FragmentActivity() {
     private var keepSplashScreen = false
     private lateinit var adapter: NotesPagerAdapter
+    private lateinit var pager: ViewPager2
     private val noteViewModel: NoteViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -49,6 +51,7 @@ class MainActivity : FragmentActivity() {
 
     fun initializeNotesView(binding: NotesLayoutBinding) {
         adapter = NotesPagerAdapter(emptyList(), this)
+        pager = binding.pager
         binding.pager.adapter = adapter
 
         noteViewModel.allNotes.observe(this) { list ->
@@ -61,10 +64,6 @@ class MainActivity : FragmentActivity() {
             } else {
                 adapter.updateItems(list)
             }
-        }
-
-        binding.insert.setOnClickListener {
-            noteViewModel.insert(Note("", ""))
         }
 
         supportFragmentManager.setFragmentResultListener(
@@ -82,6 +81,20 @@ class MainActivity : FragmentActivity() {
                 val note = Json.decodeFromString<Note>(it)
                 noteViewModel.update(note)
             }
+        }
+    }
+
+    fun addNote() {
+        noteViewModel.insert(Note("", ""))
+    }
+
+    fun saveNote() {
+
+    }
+
+    fun removeNote() {
+        if (adapter.itemCount > 0) {
+            noteViewModel.delete(adapter.note(pager.currentItem).id)
         }
     }
 }

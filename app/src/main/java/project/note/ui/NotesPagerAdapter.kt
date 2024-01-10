@@ -27,5 +27,9 @@ class NotesPagerAdapter(private var notes: List<Note>, fa: FragmentActivity) :
         notifyDataSetChanged()
     }
 
+    fun note(position: Int): Note {
+        return notes[position]
+    }
+
     private fun hash(note: Note) = note.hashCode().toLong()
 }

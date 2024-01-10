@@ -5,6 +5,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.core.os.bundleOf
+import androidx.core.widget.doOnTextChanged
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.setFragmentResult
 import kotlinx.serialization.encodeToString
@@ -24,29 +25,29 @@ class NoteFragment(private val note: Note) : Fragment() {
         binding.title.setText(note.title)
         binding.content.setText(note.content)
 
-        binding.delete.setOnClickListener {
-            val id = note.id
-            setFragmentResult(
-                "deleteNoteRequestKey",
-                bundleOf("bundleDeleteNoteKey" to id)
-            )
+        binding.title.doOnTextChanged { text, start, before, count ->
+            sendChangeResult()
         }
 
-        binding.save.setOnClickListener {
-            setFragmentResult(
-                "saveNoteRequestKey",
-                bundleOf(
-                    "bundleSaveNoteKey" to Json.encodeToString(
-                        Note(
-                            binding.title.text.toString(),
-                            binding.content.text.toString(),
-                            note.id
-                        )
-                    )
-                )
-            )
+        binding.content.doOnTextChanged { text, start, before, count ->
+            sendChangeResult()
         }
 
         return binding.root
+    }
+
+    private fun sendChangeResult() {
+        setFragmentResult(
+            "saveNoteRequestKey",
+            bundleOf(
+                "bundleSaveNoteKey" to Json.encodeToString(
+                    Note(
+                        binding.title.text.toString(),
+                        binding.content.text.toString(),
+                        note.id
+                    )
+                )
+            )
+        )
     }
 }
