@@ -58,6 +58,7 @@ android {
 }
 
 dependencies {
+    implementation("androidx.navigation:navigation-compose:2.7.6")
     val composeBom = platform("androidx.compose:compose-bom:2023.10.01")
     implementation(composeBom)
 
@@ -65,7 +66,7 @@ dependencies {
 
 
     // Material Design 3
-    implementation("androidx.compose.material3:material3")
+    implementation("androidx.compose.material:material:1.5.4")
 
     // Android Studio Preview support
     implementation("androidx.compose.ui:ui-tooling-preview")
