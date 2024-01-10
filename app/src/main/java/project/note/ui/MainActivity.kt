@@ -65,23 +65,6 @@ class MainActivity : FragmentActivity() {
                 adapter.updateItems(list)
             }
         }
-
-        supportFragmentManager.setFragmentResultListener(
-            "deleteNoteRequestKey",
-            this
-        ) { _, bundle ->
-            noteViewModel.delete(bundle.getInt("bundleDeleteNoteKey"))
-        }
-
-        supportFragmentManager.setFragmentResultListener(
-            "saveNoteRequestKey",
-            this
-        ) { _, bundle ->
-            bundle.getString("bundleSaveNoteKey")?.let {
-                val note = Json.decodeFromString<Note>(it)
-                noteViewModel.update(note)
-            }
-        }
     }
 
     fun addNote() {
@@ -89,7 +72,10 @@ class MainActivity : FragmentActivity() {
     }
 
     fun saveNote() {
-
+        if (adapter.itemCount > 0) {
+            val fragment = supportFragmentManager.findFragmentByTag("f" + adapter.getItemId(pager.currentItem)) as NoteFragment
+            noteViewModel.update(fragment.modifiedNote())
+        }
     }
 
     fun removeNote() {

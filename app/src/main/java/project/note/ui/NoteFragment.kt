@@ -25,29 +25,9 @@ class NoteFragment(private val note: Note) : Fragment() {
         binding.title.setText(note.title)
         binding.content.setText(note.content)
 
-        binding.title.doOnTextChanged { text, start, before, count ->
-            sendChangeResult()
-        }
-
-        binding.content.doOnTextChanged { text, start, before, count ->
-            sendChangeResult()
-        }
 
         return binding.root
     }
 
-    private fun sendChangeResult() {
-        setFragmentResult(
-            "saveNoteRequestKey",
-            bundleOf(
-                "bundleSaveNoteKey" to Json.encodeToString(
-                    Note(
-                        binding.title.text.toString(),
-                        binding.content.text.toString(),
-                        note.id
-                    )
-                )
-            )
-        )
-    }
+    fun modifiedNote() = Note(binding.title.text.toString(), binding.content.text.toString(), note.id)
 }
