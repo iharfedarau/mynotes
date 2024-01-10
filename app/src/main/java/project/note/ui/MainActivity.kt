@@ -1,6 +1,7 @@
 package project.note.ui
 
 import android.os.Bundle
+import android.view.WindowManager
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
 import androidx.compose.foundation.layout.fillMaxSize
@@ -42,6 +43,8 @@ class MainActivity : FragmentActivity() {
                 }
             }
         }
+
+        window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
     }
 
     fun initializeNotesView(binding: NotesLayoutBinding) {
