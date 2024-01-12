@@ -56,22 +56,25 @@ fun NotesView(activity: MainActivity) {
                             },
                             onClick = {
                                 activity.addNote()
-                                      },
+                                menuExpanded = false
+                            },
                         )
                         DropdownMenuItem(
                             content = {
                                 Text("Save")
                             },
                             onClick = {
-                                      activity.saveNote()
-                                      },
+                                activity.saveNote()
+                                menuExpanded = false
+                            },
                         )
                         DropdownMenuItem(
                             content = {
                                 Text("Remove")
                             },
                             onClick = {
-                                      activity.removeNote()
+                                activity.removeNote()
+                                menuExpanded = false
                             },
                         )
                     }
@@ -80,7 +83,9 @@ fun NotesView(activity: MainActivity) {
         },
     ) { innerPadding ->
         AndroidView(
-            modifier = Modifier.fillMaxSize().padding(innerPadding),
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(innerPadding),
             factory = { context ->
                 val view = NotesLayoutBinding.inflate(LayoutInflater.from(context), null, false)
                 activity.initializeNotesView(view)
