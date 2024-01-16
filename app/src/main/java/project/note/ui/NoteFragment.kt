@@ -1,20 +1,26 @@
 package project.note.ui
 
+import android.content.Context
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.core.os.bundleOf
-import androidx.core.widget.doOnTextChanged
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.setFragmentResult
-import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import project.note.database.Note
 import project.note.databinding.NoteFragmentLayoutBinding
 
-class NoteFragment(private val note: Note) : Fragment() {
+class NoteFragment : Fragment() {
+    private lateinit var note: Note
     private lateinit var binding: NoteFragmentLayoutBinding
+
+    override fun onAttach(context: Context) {
+        super.onAttach(context)
+
+        arguments?.getString(NOTE_SERIALIZATION_KEY)?.let {
+            note = Json.decodeFromString(Note.serializer(), it)
+        }
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -29,5 +35,10 @@ class NoteFragment(private val note: Note) : Fragment() {
         return binding.root
     }
 
-    fun modifiedNote() = Note(binding.title.text.toString(), binding.content.text.toString(), note.id)
+    fun modifiedNote() =
+        Note(binding.title.text.toString(), binding.content.text.toString(), note.id)
+
+    companion object {
+        const val NOTE_SERIALIZATION_KEY = "NOTE_SERIALIZATION_KEY"
+    }
 }

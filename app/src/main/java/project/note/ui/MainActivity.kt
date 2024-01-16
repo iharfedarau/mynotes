@@ -13,15 +13,13 @@ import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.fragment.app.FragmentActivity
 import androidx.viewpager2.widget.ViewPager2
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.serialization.decodeFromString
-import kotlinx.serialization.json.Json
 import project.note.database.Note
 import project.note.databinding.NotesLayoutBinding
 import project.note.viewmodels.NoteViewModel
 
 @AndroidEntryPoint
 class MainActivity : FragmentActivity() {
-    private var keepSplashScreen = false
+    private var keepSplashScreen = true
     private lateinit var adapter: NotesPagerAdapter
     private lateinit var pager: ViewPager2
     private val noteViewModel: NoteViewModel by viewModels()
@@ -73,7 +71,8 @@ class MainActivity : FragmentActivity() {
 
     fun saveNote() {
         if (adapter.itemCount > 0) {
-            val fragment = supportFragmentManager.findFragmentByTag("f" + adapter.getItemId(pager.currentItem)) as NoteFragment
+            val fragment =
+                supportFragmentManager.findFragmentByTag("f" + adapter.getItemId(pager.currentItem)) as NoteFragment
             noteViewModel.update(fragment.modifiedNote())
         }
     }
