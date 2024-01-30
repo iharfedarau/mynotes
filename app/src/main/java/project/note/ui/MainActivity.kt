@@ -13,6 +13,7 @@ import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.fragment.app.FragmentActivity
 import androidx.viewpager2.widget.ViewPager2
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.serialization.json.Json
 import project.note.database.Note
 import project.note.databinding.NotesLayoutBinding
 import project.note.viewmodels.NoteViewModel
@@ -55,26 +56,25 @@ class MainActivity : FragmentActivity() {
         noteViewModel.allNotes.observe(this) { list ->
             keepSplashScreen = false
 
-            // Insertion
-            if (adapter.itemCount > 0 && adapter.itemCount < list.size) {
+            if (adapter.itemCount != list.size) {
                 adapter.updateItems(list)
                 binding.pager.currentItem = list.size - 1
-            } else {
-                adapter.updateItems(list)
+            }
+        }
+
+        supportFragmentManager.setFragmentResultListener(
+            "saveNoteRequestKey",
+            this
+        ) { _, bundle ->
+            bundle.getString("bundleSaveNoteKey")?.let {
+                val note = Json.decodeFromString(Note.serializer(), it)
+                noteViewModel.update(note)
             }
         }
     }
 
     fun addNote() {
         noteViewModel.insert(Note("", ""))
-    }
-
-    fun saveNote() {
-        if (adapter.itemCount > 0) {
-            val fragment =
-                supportFragmentManager.findFragmentByTag("f" + adapter.getItemId(pager.currentItem)) as NoteFragment
-            noteViewModel.update(fragment.modifiedNote())
-        }
     }
 
     fun removeNote() {

@@ -11,10 +11,7 @@ import androidx.compose.material.Scaffold
 import androidx.compose.material.Text
 import androidx.compose.material.TopAppBar
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Favorite
-import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.MoreVert
-import androidx.compose.material.icons.filled.Search
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -56,15 +53,6 @@ fun NotesView(activity: MainActivity) {
                             },
                             onClick = {
                                 activity.addNote()
-                                menuExpanded = false
-                            },
-                        )
-                        DropdownMenuItem(
-                            content = {
-                                Text("Save")
-                            },
-                            onClick = {
-                                activity.saveNote()
                                 menuExpanded = false
                             },
                         )

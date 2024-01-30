@@ -1,11 +1,25 @@
 package project.note.ui
 
-import androidx.core.os.bundleOf
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
+import androidx.recyclerview.widget.DiffUtil
 import androidx.viewpager2.adapter.FragmentStateAdapter
-import kotlinx.serialization.json.Json
 import project.note.database.Note
+
+class PagerDiffUtil(private val oldList: List<Note>, private val newList: List<Note>) :
+    DiffUtil.Callback() {
+    override fun getOldListSize() = oldList.size
+
+    override fun getNewListSize() = newList.size
+
+    override fun areItemsTheSame(oldItemPosition: Int, newItemPosition: Int): Boolean {
+        return oldList[oldItemPosition].id == newList[newItemPosition].id
+    }
+
+    override fun areContentsTheSame(oldItemPosition: Int, newItemPosition: Int): Boolean {
+        return oldList[oldItemPosition] == newList[newItemPosition]
+    }
+}
 
 class NotesPagerAdapter(private var notes: List<Note>, fa: FragmentActivity) :
     FragmentStateAdapter(fa) {
@@ -23,17 +37,14 @@ class NotesPagerAdapter(private var notes: List<Note>, fa: FragmentActivity) :
 
     override fun createFragment(position: Int): Fragment =
         NoteFragment().apply {
-            arguments = bundleOf(
-                NoteFragment.NOTE_SERIALIZATION_KEY to Json.encodeToString(
-                    Note.serializer(),
-                    notes[position]
-                )
-            )
+            setNote(notes[position])
         }
 
-    fun updateItems(items: List<Note>) {
-        notes = items
-        notifyDataSetChanged()
+    fun updateItems(newNotes: List<Note>) {
+        val callback = PagerDiffUtil(notes, newNotes)
+        val diff = DiffUtil.calculateDiff(callback)
+        notes = newNotes
+        diff.dispatchUpdatesTo(this)
     }
 
     fun note(position: Int): Note {

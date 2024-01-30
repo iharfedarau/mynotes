@@ -1,11 +1,13 @@
 package project.note.ui
 
-import android.content.Context
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.os.bundleOf
+import androidx.core.widget.doAfterTextChanged
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.setFragmentResult
 import kotlinx.serialization.json.Json
 import project.note.database.Note
 import project.note.databinding.NoteFragmentLayoutBinding
@@ -14,31 +16,46 @@ class NoteFragment : Fragment() {
     private lateinit var note: Note
     private lateinit var binding: NoteFragmentLayoutBinding
 
-    override fun onAttach(context: Context) {
-        super.onAttach(context)
-
-        arguments?.getString(NOTE_SERIALIZATION_KEY)?.let {
-            note = Json.decodeFromString(Note.serializer(), it)
-        }
-    }
-
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
         binding = NoteFragmentLayoutBinding.inflate(inflater, container, false)
-        binding.title.setText(note.title)
-        binding.content.setText(note.content)
+        binding.title.apply {
+            setText(note.title)
+            doAfterTextChanged {
+                sendChangeResult()
+            }
+        }
 
+        binding.content.apply {
+            setText(note.content)
+            doAfterTextChanged {
+                sendChangeResult()
+            }
+        }
 
         return binding.root
     }
 
-    fun modifiedNote() =
-        Note(binding.title.text.toString(), binding.content.text.toString(), note.id)
+    fun setNote(note: Note) {
+        this.note = note
+    }
 
-    companion object {
-        const val NOTE_SERIALIZATION_KEY = "NOTE_SERIALIZATION_KEY"
+    private fun sendChangeResult() {
+        setFragmentResult(
+            "saveNoteRequestKey",
+            bundleOf(
+                "bundleSaveNoteKey" to Json.encodeToString(
+                    Note.serializer(),
+                    Note(
+                        binding.title.text.toString(),
+                        binding.content.text.toString(),
+                        note.id
+                    )
+                )
+            )
+        )
     }
 }
