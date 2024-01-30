@@ -10,10 +10,16 @@ import androidx.compose.material.Surface
 
 import androidx.compose.ui.Modifier
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
+import androidx.datastore.preferences.core.edit
+import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.fragment.app.FragmentActivity
+import androidx.lifecycle.lifecycleScope
 import androidx.viewpager2.widget.ViewPager2
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.launch
 import kotlinx.serialization.json.Json
+import project.note.NoteApplication.Companion.dataStore
 import project.note.database.Note
 import project.note.databinding.NotesLayoutBinding
 import project.note.viewmodels.NoteViewModel
@@ -24,6 +30,7 @@ class MainActivity : FragmentActivity() {
     private lateinit var adapter: NotesPagerAdapter
     private lateinit var pager: ViewPager2
     private val noteViewModel: NoteViewModel by viewModels()
+    private var pagerCurrentItem = -1
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -53,12 +60,26 @@ class MainActivity : FragmentActivity() {
         pager = binding.pager
         binding.pager.adapter = adapter
 
-        noteViewModel.allNotes.observe(this) { list ->
-            keepSplashScreen = false
+        lifecycleScope.launch {
+            dataStore.data.first { preferences ->
+                pagerCurrentItem = preferences[PREFERENCE_KYE_PAGER_CURRENT_ITEM] ?: -1
 
-            if (adapter.itemCount != list.size) {
-                adapter.updateItems(list)
-                binding.pager.currentItem = list.size - 1
+                noteViewModel.allNotes.observe(this@MainActivity) { list ->
+                    keepSplashScreen = false
+
+                    if (adapter.itemCount != list.size) {
+                        adapter.updateItems(list)
+
+                        if (pagerCurrentItem != -1 && adapter.itemCount > pagerCurrentItem) {
+                            binding.pager.currentItem = pagerCurrentItem
+                            pagerCurrentItem = -1
+                        } else{
+                            binding.pager.currentItem = list.size - 1
+                        }
+                    }
+                }
+
+                true
             }
         }
 
@@ -71,6 +92,18 @@ class MainActivity : FragmentActivity() {
                 noteViewModel.update(note)
             }
         }
+
+        binding.pager.registerOnPageChangeCallback(object : ViewPager2.OnPageChangeCallback() {
+            override fun onPageSelected(position: Int) {
+                super.onPageSelected(position)
+
+                lifecycleScope.launch {
+                    this@MainActivity.dataStore.edit { preferences ->
+                        preferences[PREFERENCE_KYE_PAGER_CURRENT_ITEM] = position
+                    }
+                }
+            }
+        })
     }
 
     fun addNote() {
@@ -81,5 +114,9 @@ class MainActivity : FragmentActivity() {
         if (adapter.itemCount > 0) {
             noteViewModel.delete(adapter.note(pager.currentItem).id)
         }
+    }
+
+    companion object {
+        private val PREFERENCE_KYE_PAGER_CURRENT_ITEM = intPreferencesKey("PAGER_CURRENT_ITEM")
     }
 }

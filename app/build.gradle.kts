@@ -119,6 +119,8 @@ dependencies {
     // For local unit tests
     testImplementation("com.google.dagger:hilt-android-testing:$hiltVersion")
     kaptTest("com.google.dagger:hilt-compiler:$hiltVersion")
+
+    implementation("androidx.datastore:datastore-preferences:1.0.0")
 }
 
 // Allow references to generated code
