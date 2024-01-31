@@ -3,7 +3,6 @@ plugins {
     id("org.jetbrains.kotlin.android")
     id("com.google.devtools.ksp")
     kotlin("kapt")
-    id("kotlinx-serialization")
     id("com.google.dagger.hilt.android")
 }
 
@@ -88,8 +87,6 @@ dependencies {
     implementation("androidx.fragment:fragment-ktx:1.6.1")
     implementation("androidx.viewpager2:viewpager2:1.0.0")
     implementation("androidx.constraintlayout:constraintlayout:2.1.4")
-
-    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.2.1")
 
     // Room
     val roomVersion = "2.5.2"

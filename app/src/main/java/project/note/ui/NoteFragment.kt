@@ -8,7 +8,6 @@ import androidx.core.os.bundleOf
 import androidx.core.widget.doAfterTextChanged
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.setFragmentResult
-import kotlinx.serialization.json.Json
 import project.note.database.Note
 import project.note.databinding.NoteFragmentLayoutBinding
 
@@ -45,16 +44,14 @@ class NoteFragment : Fragment() {
 
     private fun sendChangeResult() {
         setFragmentResult(
-            "saveNoteRequestKey",
+            "NoteFragment",
             bundleOf(
-                "bundleSaveNoteKey" to Json.encodeToString(
-                    Note.serializer(),
-                    Note(
-                        binding.title.text.toString(),
-                        binding.content.text.toString(),
-                        note.id
-                    )
-                )
+                "Save" to
+                        Note(
+                            binding.title.text.toString(),
+                            binding.content.text.toString(),
+                            note.id
+                        )
             )
         )
     }

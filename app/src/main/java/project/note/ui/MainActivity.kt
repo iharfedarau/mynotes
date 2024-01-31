@@ -18,7 +18,6 @@ import androidx.viewpager2.widget.ViewPager2
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
-import kotlinx.serialization.json.Json
 import project.note.NoteApplication.Companion.dataStore
 import project.note.database.Note
 import project.note.databinding.NotesLayoutBinding
@@ -84,12 +83,11 @@ class MainActivity : FragmentActivity() {
         }
 
         supportFragmentManager.setFragmentResultListener(
-            "saveNoteRequestKey",
+            "NoteFragment",
             this
         ) { _, bundle ->
-            bundle.getString("bundleSaveNoteKey")?.let {
-                val note = Json.decodeFromString(Note.serializer(), it)
-                noteViewModel.update(note)
+            bundle.getSerializable("Save")?.let {
+                noteViewModel.update(it as Note)
             }
         }
 
