@@ -18,7 +18,9 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.viewinterop.AndroidView
+import project.note.R
 import project.note.databinding.NotesLayoutBinding
 
 @Composable
@@ -32,13 +34,13 @@ fun NotesView(activity: MainActivity) {
 
             TopAppBar(
                 title = {
-                    Text("Notes")
+                    Text(stringResource(R.string.notes))
                 },
                 actions = {
                     IconButton(onClick = { menuExpanded = !menuExpanded }) {
                         Icon(
                             imageVector = Icons.Filled.MoreVert,
-                            contentDescription = "More",
+                            contentDescription = null,
                         )
                     }
 
@@ -49,7 +51,7 @@ fun NotesView(activity: MainActivity) {
                         // 6
                         DropdownMenuItem(
                             content = {
-                                Text("Add")
+                                Text(stringResource(R.string.add))
                             },
                             onClick = {
                                 activity.addNote()
@@ -58,7 +60,7 @@ fun NotesView(activity: MainActivity) {
                         )
                         DropdownMenuItem(
                             content = {
-                                Text("Remove")
+                                Text(stringResource(R.string.remove))
                             },
                             onClick = {
                                 activity.removeNote()

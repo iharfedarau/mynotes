@@ -14,14 +14,16 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.stringResource
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import project.note.R
 
-sealed class BottomNavigationBarItem(val route: String, val icon: ImageVector, val label: String) {
-    data object Notes : BottomNavigationBarItem("notes", Icons.Default.List, "Notes")
-    data object Reminders :  BottomNavigationBarItem("reminders", Icons.Default.Notifications, "Reminders")
+sealed class BottomNavigationBarItem(val route: String, val icon: ImageVector, val label: Int) {
+    data object Notes : BottomNavigationBarItem("notes", Icons.Default.List, R.string.notes)
+    data object Reminders :  BottomNavigationBarItem("reminders", Icons.Default.Notifications, R.string.reminders)
 }
 
 @Composable
@@ -48,7 +50,7 @@ fun BottomNavigationBar(activity: MainActivity) {
                             }
                         },
                         icon = { Icon(item.icon, contentDescription = null) },
-                        label = { Text(item.label) }
+                        label = { Text(stringResource(item.label)) }
                     )
                 }
             }
