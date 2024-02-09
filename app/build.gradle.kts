@@ -118,6 +118,9 @@ dependencies {
     kaptTest("com.google.dagger:hilt-compiler:$hiltVersion")
 
     implementation("androidx.datastore:datastore-preferences:1.0.0")
+
+    implementation("androidx.compose.runtime:runtime:1.6.1")
+    implementation("androidx.compose.runtime:runtime-livedata:1.6.1")
 }
 
 // Allow references to generated code

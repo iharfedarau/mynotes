@@ -4,35 +4,54 @@ import android.os.Bundle
 import android.view.WindowManager
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
-import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.text.ClickableText
+import androidx.compose.material.BottomAppBar
+import androidx.compose.material.Divider
+import androidx.compose.material.ExtendedFloatingActionButton
+import androidx.compose.material.Icon
+import androidx.compose.material.IconButton
 import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Surface
+import androidx.compose.material.Scaffold
+import androidx.compose.material.Text
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Menu
+import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.rememberScaffoldState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.unit.dp
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
-import androidx.datastore.preferences.core.edit
-import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.fragment.app.FragmentActivity
-import androidx.lifecycle.lifecycleScope
-import androidx.viewpager2.widget.ViewPager2
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
-import project.note.NoteApplication.Companion.dataStore
 import project.note.database.Note
-import project.note.databinding.NotesLayoutBinding
 import project.note.viewmodels.NoteViewModel
 
 @AndroidEntryPoint
 class MainActivity : FragmentActivity() {
     private var keepSplashScreen = true
-    private lateinit var adapter: NotesPagerAdapter
-    private lateinit var pager: ViewPager2
     private val noteViewModel: NoteViewModel by viewModels()
-    private var pagerCurrentItem = -1
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        noteViewModel.allNotes.observe(this) {
+            keepSplashScreen = false
+        }
 
         installSplashScreen()
             .apply {
@@ -43,78 +62,95 @@ class MainActivity : FragmentActivity() {
 
         setContent {
             MaterialTheme {
-                Surface(
-                    modifier = Modifier.fillMaxSize()
+                val scaffoldState = rememberScaffoldState()
+                val scope = rememberCoroutineScope()
+                var showNotes by remember { mutableStateOf(false) }
+                var currentNote by remember { mutableStateOf<Note?>(null) }
+                val notes by noteViewModel.allNotes.observeAsState(initial = emptyList())
+
+                Scaffold(
+                    scaffoldState = scaffoldState,
+                    drawerContent = {
+
+                    },
+                    floatingActionButton = {
+                        if (!showNotes) {
+                            ExtendedFloatingActionButton(
+                                text = { Text("New") },
+                                onClick = {
+                                    noteViewModel.insert(Note("Unknown", ""))
+                                    noteViewModel.returnedVal.observe(this@MainActivity) {
+                                        currentNote = it
+                                        showNotes = true
+                                    }
+                                }
+                            )
+                        }
+                    },
+                    bottomBar = {
+                        BottomAppBar {
+                            IconButton(onClick = {
+                                scope.launch {
+                                    scaffoldState.drawerState.open()
+                                }
+                            }) {
+                                Icon(
+                                    imageVector = Icons.Filled.Menu,
+                                    contentDescription = null,
+                                )
+                            }
+
+                            Spacer(modifier = Modifier.weight(1.0f)) // fill height with spacer
+
+                            IconButton(onClick = {
+                            }) {
+                                Icon(
+                                    imageVector = Icons.Filled.Search,
+                                    contentDescription = null,
+                                )
+                            }
+                        }
+                    }
                 ) {
-                    BottomNavigationBar(this)
-                }
-            }
-        }
 
-        window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
-    }
+                    val cn = currentNote
+                    if (showNotes && cn != null) {
+                        NotesView(cn, it, {
+                            showNotes = false
 
-    fun initializeNotesView(binding: NotesLayoutBinding) {
-        adapter = NotesPagerAdapter(emptyList(), this)
-        pager = binding.pager
-        binding.pager.adapter = adapter
+                        },  { note ->
+                            noteViewModel.update(note)
+                        }, {id ->
+                            noteViewModel.delete(id).invokeOnCompletion {
+                                currentNote = null
+                                showNotes = false
+                            }
+                        })
+                    } else {
 
-        lifecycleScope.launch {
-            dataStore.data.first { preferences ->
-                pagerCurrentItem = preferences[PREFERENCE_KYE_PAGER_CURRENT_ITEM] ?: -1
 
-                noteViewModel.allNotes.observe(this@MainActivity) { list ->
-                    keepSplashScreen = false
-
-                    if (adapter.itemCount != list.size) {
-                        adapter.updateItems(list)
-
-                        if (pagerCurrentItem != -1 && adapter.itemCount > pagerCurrentItem) {
-                            binding.pager.currentItem = pagerCurrentItem
-                            pagerCurrentItem = -1
-                        } else{
-                            binding.pager.currentItem = list.size - 1
+                        LazyColumn(modifier = Modifier.fillMaxWidth().padding(24.dp),
+                            verticalArrangement = Arrangement.spacedBy(24.dp)) {
+                            itemsIndexed(items = notes,
+                                itemContent = {index, item ->
+                                    ClickableText(modifier = Modifier.fillMaxWidth(),
+                                        text = AnnotatedString(item.title) ,
+                                        onClick = {
+                                            currentNote = item
+                                            showNotes = true
+                                        })
+                                        Divider(color = Color.Black, thickness = 1.dp)
+                                })
                         }
                     }
                 }
-
-                true
             }
+
+            window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
         }
 
-        supportFragmentManager.setFragmentResultListener(
-            "NoteFragment",
-            this
-        ) { _, bundle ->
-            bundle.getSerializable("Save")?.let {
-                noteViewModel.update(it as Note)
-            }
+        fun addNote() {
+            noteViewModel.insert(Note("Unknown", ""))
         }
-
-        binding.pager.registerOnPageChangeCallback(object : ViewPager2.OnPageChangeCallback() {
-            override fun onPageSelected(position: Int) {
-                super.onPageSelected(position)
-
-                lifecycleScope.launch {
-                    this@MainActivity.dataStore.edit { preferences ->
-                        preferences[PREFERENCE_KYE_PAGER_CURRENT_ITEM] = position
-                    }
-                }
-            }
-        })
-    }
-
-    fun addNote() {
-        noteViewModel.insert(Note("", ""))
-    }
-
-    fun removeNote() {
-        if (adapter.itemCount > 0) {
-            noteViewModel.delete(adapter.note(pager.currentItem).id)
-        }
-    }
-
-    companion object {
-        private val PREFERENCE_KYE_PAGER_CURRENT_ITEM = intPreferencesKey("PAGER_CURRENT_ITEM")
     }
 }

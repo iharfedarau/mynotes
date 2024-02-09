@@ -20,7 +20,7 @@ class NoteRepository(private val noteService: NoteService,
             }
         }
     }
-    suspend fun insert(note: Note) {
+    suspend fun insert(note: Note): Note {
         if (BuildConfig.IS_NETWORK_SERVICE_AVAILEBLE) {
             try {
                 noteService.insert(note)
@@ -30,6 +30,7 @@ class NoteRepository(private val noteService: NoteService,
         }
 
         noteDao.insertNote(note)
+        return  note
     }
 
     suspend fun delete(id: Int) {

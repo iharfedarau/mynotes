@@ -12,7 +12,7 @@ interface NoteDao {
     fun getNotes(): Flow<List<Note>>
 
     @Insert(onConflict = OnConflictStrategy.IGNORE)
-    suspend fun insertNote(note: Note)
+    suspend fun insertNote(note: Note): Long
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertAllNote(note: List<Note>)
