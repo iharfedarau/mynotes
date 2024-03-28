@@ -1,17 +1,18 @@
 package project.note.ui
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.ClickableText
-import androidx.compose.material.Button
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.Divider
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.Icon
@@ -19,7 +20,6 @@ import androidx.compose.material.IconButton
 import androidx.compose.material.ModalBottomSheetLayout
 import androidx.compose.material.ModalBottomSheetValue
 import androidx.compose.material.Scaffold
-import androidx.compose.material.Text
 import androidx.compose.material.TextField
 import androidx.compose.material.TopAppBar
 import androidx.compose.material.icons.Icons
@@ -35,22 +35,21 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.launch
 import project.note.database.Note
 
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
-//https://developer.android.com/jetpack/compose/components/app-bars
 fun NotesView(
     note: Note,
     paddingValues: PaddingValues,
     back: () -> Unit,
     save: (Note) -> Unit,
-    delete: (Int) -> Unit
+    delete: (Long) -> Unit
 ) {
-    val bottomSheetState =
-        rememberModalBottomSheetState(initialValue = ModalBottomSheetValue.Hidden)
+    val bottomSheetState = rememberModalBottomSheetState(initialValue = ModalBottomSheetValue.Hidden)
     val coroutineScope = rememberCoroutineScope()
 
     Scaffold(
@@ -94,14 +93,14 @@ fun NotesView(
                 var title by rememberSaveable { mutableStateOf(note.title) }
                 var content by rememberSaveable { mutableStateOf(note.content) }
 
-                TextField(title, onValueChange = {
-                    title = it
-                    save(Note(title, content, note.id))
+                TextField(title, singleLine = true, modifier = Modifier.fillMaxWidth(),  onValueChange = {
+                    if (it.length <= 30) {
+                        title = it
+                        save(Note(title, content, note.id))
+                    }
                 })
 
-
-
-                TextField(content, onValueChange = {
+                TextField(content, modifier = Modifier.fillMaxWidth().fillMaxHeight(1.0f).verticalScroll(rememberScrollState()), onValueChange = {
                     content = it
                     save(Note(title, content, note.id))
                 })
@@ -110,10 +109,10 @@ fun NotesView(
             ModalBottomSheetLayout(
                 sheetState = bottomSheetState,
                 sheetContent = {
-                    LazyColumn (modifier = Modifier.padding(16.dp)) {
+                    LazyColumn(modifier = Modifier.padding(16.dp)) {
                         items(1, itemContent = {
-                            ClickableText(modifier = Modifier.fillMaxWidth(),
-                                text = AnnotatedString("Delete") ,
+                            ClickableText(modifier = Modifier.fillMaxWidth().height(48.dp),
+                                text = AnnotatedString("Delete"),
                                 onClick = {
                                     delete(note.id)
                                 })

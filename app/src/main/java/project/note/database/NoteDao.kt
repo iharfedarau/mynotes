@@ -18,8 +18,8 @@ interface NoteDao {
     suspend fun insertAllNote(note: List<Note>)
 
     @Query("DELETE FROM note_table WHERE id=:id")
-    suspend fun delete(id: Int)
+    suspend fun delete(id: Long)
 
     @Query("UPDATE note_table SET title=:title, content=:content WHERE id=:id")
-    suspend fun update(id: Int, title: String, content: String)
+    suspend fun update(id: Long, title: String, content: String)
 }

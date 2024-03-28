@@ -29,11 +29,10 @@ class NoteRepository(private val noteService: NoteService,
             }
         }
 
-        noteDao.insertNote(note)
-        return  note
+        return  Note(note.title, note.content, noteDao.insertNote(note))
     }
 
-    suspend fun delete(id: Int) {
+    suspend fun delete(id: Long) {
         if (BuildConfig.IS_NETWORK_SERVICE_AVAILEBLE) {
             try {
                 noteService.delete(id)

@@ -9,4 +9,4 @@ import java.io.Serializable
 data class Note (
     @ColumnInfo(name = "title") val title: String,
     @ColumnInfo(name = "content") val content: String,
-    @PrimaryKey(autoGenerate = true) var id: Int = 0): Serializable
+    @PrimaryKey(autoGenerate = true) val id: Long = 0): Serializable

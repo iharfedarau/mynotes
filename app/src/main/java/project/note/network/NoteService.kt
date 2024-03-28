@@ -15,7 +15,7 @@ interface NoteService {
     @POST("notes")
     suspend fun insert(@Body note: Note)
     @DELETE("notes/{id}")
-    suspend fun delete(@Path("id") id: Int)
+    suspend fun delete(@Path("id") id: Long)
     @POST("notes")
     suspend fun update(@Body note: Note)
 

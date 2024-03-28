@@ -5,13 +5,18 @@ import android.view.WindowManager
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.text.ClickableText
 import androidx.compose.material.BottomAppBar
+import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.Divider
 import androidx.compose.material.ExtendedFloatingActionButton
 import androidx.compose.material.Icon
@@ -29,7 +34,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
-
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.AnnotatedString
@@ -40,6 +45,7 @@ import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import project.note.database.Note
 import project.note.viewmodels.NoteViewModel
+
 
 @AndroidEntryPoint
 class MainActivity : FragmentActivity() {
@@ -67,6 +73,13 @@ class MainActivity : FragmentActivity() {
                 var showNotes by remember { mutableStateOf(false) }
                 var currentNote by remember { mutableStateOf<Note?>(null) }
                 val notes by noteViewModel.allNotes.observeAsState(initial = emptyList())
+                var inProgress by remember { mutableStateOf(false) }
+
+                noteViewModel.insertedNote.observe(this@MainActivity) {
+                    currentNote = it
+                    showNotes = true
+                    inProgress = false
+                }
 
                 Scaffold(
                     scaffoldState = scaffoldState,
@@ -74,83 +87,87 @@ class MainActivity : FragmentActivity() {
 
                     },
                     floatingActionButton = {
-                        if (!showNotes) {
+                        if (!inProgress && !showNotes) {
                             ExtendedFloatingActionButton(
                                 text = { Text("New") },
                                 onClick = {
+                                    inProgress = true
                                     noteViewModel.insert(Note("Unknown", ""))
-                                    noteViewModel.returnedVal.observe(this@MainActivity) {
-                                        currentNote = it
-                                        showNotes = true
-                                    }
                                 }
                             )
                         }
                     },
                     bottomBar = {
-                        BottomAppBar {
-                            IconButton(onClick = {
-                                scope.launch {
-                                    scaffoldState.drawerState.open()
+                        if (!inProgress) {
+                            BottomAppBar {
+                                IconButton(onClick = {
+                                    scope.launch {
+                                        scaffoldState.drawerState.open()
+                                    }
+                                }) {
+                                    Icon(
+                                        imageVector = Icons.Filled.Menu,
+                                        contentDescription = null,
+                                    )
                                 }
-                            }) {
-                                Icon(
-                                    imageVector = Icons.Filled.Menu,
-                                    contentDescription = null,
-                                )
-                            }
 
-                            Spacer(modifier = Modifier.weight(1.0f)) // fill height with spacer
+                                Spacer(modifier = Modifier.weight(1.0f)) // fill height with spacer
 
-                            IconButton(onClick = {
-                            }) {
-                                Icon(
-                                    imageVector = Icons.Filled.Search,
-                                    contentDescription = null,
-                                )
+                                IconButton(onClick = {
+                                }) {
+                                    Icon(
+                                        imageVector = Icons.Filled.Search,
+                                        contentDescription = null,
+                                    )
+                                }
                             }
                         }
                     }
                 ) {
-
-                    val cn = currentNote
-                    if (showNotes && cn != null) {
-                        NotesView(cn, it, {
-                            showNotes = false
-
-                        },  { note ->
-                            noteViewModel.update(note)
-                        }, {id ->
-                            noteViewModel.delete(id).invokeOnCompletion {
-                                currentNote = null
-                                showNotes = false
-                            }
-                        })
+                    if (inProgress) {
+                        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center){
+                            CircularProgressIndicator(modifier = Modifier.width(64.dp))
+                        }
                     } else {
+                        val cn = currentNote
+                        if (showNotes && cn != null) {
+                            NotesView(cn, it, {
+                                showNotes = false
 
-
-                        LazyColumn(modifier = Modifier.fillMaxWidth().padding(24.dp),
-                            verticalArrangement = Arrangement.spacedBy(24.dp)) {
-                            itemsIndexed(items = notes,
-                                itemContent = {index, item ->
-                                    ClickableText(modifier = Modifier.fillMaxWidth(),
-                                        text = AnnotatedString(item.title) ,
-                                        onClick = {
-                                            currentNote = item
-                                            showNotes = true
-                                        })
+                            }, { note ->
+                                noteViewModel.update(note)
+                            }, { id ->
+                                inProgress = true
+                                noteViewModel.delete(id).invokeOnCompletion {
+                                    inProgress = false
+                                    currentNote = null
+                                    showNotes = false
+                                }
+                            })
+                        } else {
+                            LazyColumn(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(24.dp),
+                                verticalArrangement = Arrangement.spacedBy(24.dp)
+                            ) {
+                                itemsIndexed(items = notes,
+                                    itemContent = { _, item ->
+                                        ClickableText(modifier = Modifier.fillMaxWidth().height(48.dp),
+                                            text = AnnotatedString(item.title),
+                                            onClick = {
+                                                currentNote = item
+                                                showNotes = true
+                                            })
                                         Divider(color = Color.Black, thickness = 1.dp)
-                                })
+                                    })
+                            }
                         }
                     }
                 }
             }
 
             window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
-        }
-
-        fun addNote() {
-            noteViewModel.insert(Note("Unknown", ""))
         }
     }
 }

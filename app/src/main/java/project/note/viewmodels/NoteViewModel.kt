@@ -18,15 +18,15 @@ import javax.inject.Inject
 class NoteViewModel @Inject constructor(
     private val repository: NoteRepository
 ) : ViewModel() {
-    var returnedVal: MutableLiveData<Note> = MutableLiveData()
+    var insertedNote: MutableLiveData<Note> = MutableLiveData()
 
-    val allNotes: LiveData<List<Note>> = repository.allNotes.asLiveData()
+    val allNotes = repository.allNotes.asLiveData()
 
     fun insert(note: Note) = viewModelScope.launch {
-        returnedVal.postValue(repository.insert(note))
+        insertedNote.postValue(repository.insert(note))
     }
 
-    fun delete(id: Int) = viewModelScope.launch {
+    fun delete(id: Long) = viewModelScope.launch {
         repository.delete(id)
     }
 
