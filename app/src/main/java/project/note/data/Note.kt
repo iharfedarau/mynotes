@@ -1,4 +1,4 @@
-package project.note.database
+package project.note.data
 
 import androidx.room.ColumnInfo
 import androidx.room.Entity

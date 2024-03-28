@@ -1,6 +1,6 @@
-package project.note.network
+package project.note.data.network
 
-import project.note.database.Note
+import project.note.data.Note
 import retrofit2.Retrofit
 import retrofit2.converter.moshi.MoshiConverterFactory
 import retrofit2.http.Body

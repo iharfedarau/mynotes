@@ -1,4 +1,4 @@
-package project.note.database
+package project.note.data.db
 
 import android.content.Context
 import androidx.room.Database
@@ -6,6 +6,7 @@ import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
+import project.note.data.Note
 
 @Database(entities = [Note::class], version = 2, exportSchema = false)
 abstract class NoteRoomDatabase : RoomDatabase() {

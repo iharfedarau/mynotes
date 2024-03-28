@@ -1,17 +1,21 @@
-package project.note.repository
+package project.note.data.repository
 
 import kotlinx.coroutines.flow.Flow
 import project.note.BuildConfig
-import project.note.database.Note
-import project.note.database.NoteDao
-import project.note.network.NoteService
+import project.note.data.Note
+import project.note.data.db.NoteDao
+import project.note.data.network.NoteService
+import project.note.domain.repository.NoteRepository
 
-class NoteRepository(private val noteService: NoteService,
+class NoteRepositoryImpl(private val noteService: NoteService,
                      private val noteDao: NoteDao
-) {
-    val allNotes: Flow<List<Note>> = noteDao.getNotes()
+): NoteRepository {
 
-    suspend fun refreshNotes() {
+    override fun allNotes(): Flow<List<Note>> {
+        return noteDao.getNotes()
+    }
+
+    override  suspend fun refreshNotes() {
         if (BuildConfig.IS_NETWORK_SERVICE_AVAILEBLE) {
             try {
                 noteDao.insertAllNote(noteService.getNotes())
@@ -20,7 +24,8 @@ class NoteRepository(private val noteService: NoteService,
             }
         }
     }
-    suspend fun insert(note: Note): Note {
+
+    override suspend fun insert(note: Note): Note {
         if (BuildConfig.IS_NETWORK_SERVICE_AVAILEBLE) {
             try {
                 noteService.insert(note)
@@ -32,7 +37,7 @@ class NoteRepository(private val noteService: NoteService,
         return  Note(note.title, note.content, noteDao.insertNote(note))
     }
 
-    suspend fun delete(id: Long) {
+    override suspend fun delete(id: Long) {
         if (BuildConfig.IS_NETWORK_SERVICE_AVAILEBLE) {
             try {
                 noteService.delete(id)
@@ -44,7 +49,7 @@ class NoteRepository(private val noteService: NoteService,
         noteDao.delete(id)
     }
 
-    suspend fun update(note: Note) {
+    override suspend fun update(note: Note) {
         if (BuildConfig.IS_NETWORK_SERVICE_AVAILEBLE) {
             try {
                 noteService.update(note)

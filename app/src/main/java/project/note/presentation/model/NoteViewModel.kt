@@ -1,17 +1,13 @@
-package project.note.viewmodels
+package project.note.presentation.model
 
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
-import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.asLiveData
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
-import project.note.database.Note
-import project.note.repository.NoteRepository
+import project.note.data.Note
+import project.note.domain.repository.NoteRepository
 import javax.inject.Inject
 
 @HiltViewModel
@@ -20,7 +16,7 @@ class NoteViewModel @Inject constructor(
 ) : ViewModel() {
     var insertedNote: MutableLiveData<Note> = MutableLiveData()
 
-    val allNotes = repository.allNotes.asLiveData()
+    val allNotes = repository.allNotes().asLiveData()
 
     fun insert(note: Note) = viewModelScope.launch {
         insertedNote.postValue(repository.insert(note))
@@ -34,7 +30,7 @@ class NoteViewModel @Inject constructor(
         repository.update(note)
     }
 
-    fun refreshData() {
+    private fun refreshData() {
         viewModelScope.launch {
             repository.refreshNotes()
         }

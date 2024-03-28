@@ -1,4 +1,4 @@
-package project.note.ui
+package project.note.presentation
 
 import android.os.Bundle
 import android.view.WindowManager
@@ -43,8 +43,8 @@ import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.fragment.app.FragmentActivity
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
-import project.note.database.Note
-import project.note.viewmodels.NoteViewModel
+import project.note.data.Note
+import project.note.presentation.model.NoteViewModel
 
 
 @AndroidEntryPoint
