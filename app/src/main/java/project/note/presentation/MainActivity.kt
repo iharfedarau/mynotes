@@ -28,8 +28,8 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.rememberScaffoldState
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -41,7 +41,9 @@ import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.unit.dp
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.fragment.app.FragmentActivity
+import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import project.note.data.Note
 import project.note.presentation.model.NoteViewModel
@@ -55,8 +57,10 @@ class MainActivity : FragmentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        noteViewModel.allNotes.observe(this) {
-            keepSplashScreen = false
+        lifecycleScope.launch {
+            noteViewModel.allNotes.collectLatest {
+                keepSplashScreen = false
+            }
         }
 
         installSplashScreen()
@@ -72,14 +76,8 @@ class MainActivity : FragmentActivity() {
                 val scope = rememberCoroutineScope()
                 var showNotes by remember { mutableStateOf(false) }
                 var currentNote by remember { mutableStateOf<Note?>(null) }
-                val notes by noteViewModel.allNotes.observeAsState(initial = emptyList())
+                val notes by noteViewModel.allNotes.collectAsState(initial = emptyList())
                 var inProgress by remember { mutableStateOf(false) }
-
-                noteViewModel.insertedNote.observe(this@MainActivity) {
-                    currentNote = it
-                    showNotes = true
-                    inProgress = false
-                }
 
                 Scaffold(
                     scaffoldState = scaffoldState,
@@ -92,7 +90,11 @@ class MainActivity : FragmentActivity() {
                                 text = { Text("New") },
                                 onClick = {
                                     inProgress = true
-                                    noteViewModel.insert(Note("Unknown", ""))
+                                    noteViewModel.insert(Note("Unknown", "")) {
+                                        currentNote = it
+                                        showNotes = true
+                                        inProgress = false
+                                    }
                                 }
                             )
                         }
@@ -153,7 +155,9 @@ class MainActivity : FragmentActivity() {
                             ) {
                                 itemsIndexed(items = notes,
                                     itemContent = { _, item ->
-                                        ClickableText(modifier = Modifier.fillMaxWidth().height(48.dp),
+                                        ClickableText(modifier = Modifier
+                                            .fillMaxWidth()
+                                            .height(48.dp),
                                             text = AnnotatedString(item.title),
                                             onClick = {
                                                 currentNote = item

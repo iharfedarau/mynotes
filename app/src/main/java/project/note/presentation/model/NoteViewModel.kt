@@ -1,8 +1,6 @@
 package project.note.presentation.model
 
-import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.asLiveData
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
@@ -14,12 +12,10 @@ import javax.inject.Inject
 class NoteViewModel @Inject constructor(
     private val repository: NoteRepository
 ) : ViewModel() {
-    var insertedNote: MutableLiveData<Note> = MutableLiveData()
+    val allNotes = repository.allNotes()
 
-    val allNotes = repository.allNotes().asLiveData()
-
-    fun insert(note: Note) = viewModelScope.launch {
-        insertedNote.postValue(repository.insert(note))
+    fun insert(note: Note, callback: (note: Note) -> Unit) = viewModelScope.launch {
+        callback(repository.insert(note))
     }
 
     fun delete(id: Long) = viewModelScope.launch {
