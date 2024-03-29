@@ -1,3 +1,5 @@
+import java.io.ByteArrayOutputStream
+
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
@@ -6,7 +8,16 @@ plugins {
     id("com.google.dagger.hilt.android")
 }
 
-val IS_NETWORK_SERVICE_AVAILEBLE = "IS_NETWORK_SERVICE_AVAILEBLE"
+val isNetworkServiceAvailable = "isNetworkServiceAvailable"
+
+fun getCurrentCommit (): String {
+    val stdout =  ByteArrayOutputStream()
+    exec {
+        commandLine("git", "rev-parse", "--short", "HEAD")
+        standardOutput = stdout
+    }
+    return stdout.toString().trim()
+}
 
 android {
     namespace = "project.note"
@@ -17,14 +28,14 @@ android {
         minSdk = 29
         targetSdk = 34
         versionCode = 1
-        versionName = "1.0"
+        versionName = getCurrentCommit()
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
             useSupportLibrary = true
         }
 
-        buildConfigField("Boolean", IS_NETWORK_SERVICE_AVAILEBLE, "false")
+        buildConfigField("Boolean", isNetworkServiceAvailable, "false")
     }
 
     buildTypes {
@@ -57,27 +68,27 @@ android {
 }
 
 dependencies {
-    implementation("androidx.navigation:navigation-compose:2.7.6")
+    implementation("androidx.navigation:navigation-compose:2.7.7")
     val composeBom = platform("androidx.compose:compose-bom:2023.10.01")
     implementation(composeBom)
 
-    implementation("androidx.compose.material:material:1.5.4")
+    implementation("androidx.compose.material:material:1.6.4")
 
     // Optional - Integration with activities
-    implementation("androidx.activity:activity-compose:1.7.2")
+    implementation("androidx.activity:activity-compose:1.8.2")
 
     // Lifecycle
-    val lifecycleVersion = "2.6.2"
+    val lifecycleVersion = "2.7.0"
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:${lifecycleVersion}")
     implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:${lifecycleVersion}")
 
-    implementation("androidx.core:core-ktx:1.9.0")
+    implementation("androidx.core:core-ktx:1.12.0")
     testImplementation("junit:junit:4.13.2")
     androidTestImplementation("androidx.test.ext:junit:1.1.5")
     androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")
 
     // Room
-    val roomVersion = "2.5.2"
+    val roomVersion = "2.6.1"
     implementation("androidx.room:room-runtime:$roomVersion")
     annotationProcessor("androidx.room:room-compiler:$roomVersion")
     // To use Kotlin Symbol Processing (KSP)
@@ -107,7 +118,7 @@ dependencies {
 
     implementation("androidx.datastore:datastore-preferences:1.0.0")
 
-    implementation("androidx.compose.runtime:runtime:1.6.1")
+    implementation("androidx.compose.runtime:runtime:1.6.4")
 }
 
 // Allow references to generated code

@@ -9,7 +9,7 @@ import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import kotlinx.coroutines.launch
+
 
 @Composable
 fun BottomBar(onMenuClick: () -> Unit) {

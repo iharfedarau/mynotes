@@ -16,7 +16,7 @@ class NoteRepositoryImpl(private val noteService: NoteService,
     }
 
     override  suspend fun refreshNotes() {
-        if (BuildConfig.IS_NETWORK_SERVICE_AVAILEBLE) {
+        if (BuildConfig.isNetworkServiceAvailable) {
             try {
                 noteDao.insertAllNote(noteService.getNotes())
             } catch (e: Exception) {
@@ -26,7 +26,7 @@ class NoteRepositoryImpl(private val noteService: NoteService,
     }
 
     override suspend fun insert(note: Note): Note {
-        if (BuildConfig.IS_NETWORK_SERVICE_AVAILEBLE) {
+        if (BuildConfig.isNetworkServiceAvailable) {
             try {
                 noteService.insert(note)
             } catch (e: Exception) {
@@ -38,7 +38,7 @@ class NoteRepositoryImpl(private val noteService: NoteService,
     }
 
     override suspend fun delete(id: Long) {
-        if (BuildConfig.IS_NETWORK_SERVICE_AVAILEBLE) {
+        if (BuildConfig.isNetworkServiceAvailable) {
             try {
                 noteService.delete(id)
             } catch (e: Exception) {
@@ -50,7 +50,7 @@ class NoteRepositoryImpl(private val noteService: NoteService,
     }
 
     override suspend fun update(note: Note) {
-        if (BuildConfig.IS_NETWORK_SERVICE_AVAILEBLE) {
+        if (BuildConfig.isNetworkServiceAvailable) {
             try {
                 noteService.update(note)
             } catch (e: Exception) {

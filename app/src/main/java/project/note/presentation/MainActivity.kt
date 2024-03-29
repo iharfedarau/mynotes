@@ -60,7 +60,7 @@ class MainActivity : ComponentActivity() {
                 Scaffold(
                     scaffoldState = scaffoldState,
                     drawerContent = {
-
+                        DrawerContent()
                     },
                     floatingActionButton = {
                         if (uiState is UiState.ShowNotesView) {
