@@ -26,7 +26,7 @@ import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
-import project.note.data.Note
+import project.note.domain.Note
 import project.note.presentation.model.NoteViewModel
 
 @AndroidEntryPoint

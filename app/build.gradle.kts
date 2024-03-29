@@ -4,7 +4,6 @@ plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
     id("com.google.devtools.ksp")
-    kotlin("kapt")
     id("com.google.dagger.hilt.android")
 }
 
@@ -54,17 +53,17 @@ android {
     }
     buildFeatures {
         compose = true
-        viewBinding = true
         buildConfig = true
     }
     composeOptions {
-        kotlinCompilerExtensionVersion = "1.5.2"
+        kotlinCompilerExtensionVersion = "1.5.11"
     }
     packaging {
         resources {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
         }
     }
+
 }
 
 dependencies {
@@ -91,7 +90,6 @@ dependencies {
     val roomVersion = "2.6.1"
     implementation("androidx.room:room-runtime:$roomVersion")
     annotationProcessor("androidx.room:room-compiler:$roomVersion")
-    // To use Kotlin Symbol Processing (KSP)
     ksp("androidx.room:room-compiler:$roomVersion")
     // optional - Kotlin Extensions and Coroutines support for Room
     implementation("androidx.room:room-ktx:$roomVersion")
@@ -105,23 +103,13 @@ dependencies {
     implementation("androidx.core:core-splashscreen:1.0.1")
 
     //DI
-    val hiltVersion = "2.48.1"
+    val hiltVersion = "2.51"
     implementation("com.google.dagger:hilt-android:$hiltVersion")
-    kapt("com.google.dagger:hilt-android-compiler:$hiltVersion")
-
+    ksp("com.google.dagger:hilt-android-compiler:$hiltVersion")
     // For instrumentation tests
-    androidTestImplementation("com.google.dagger:hilt-android-testing:$hiltVersion")
-    kaptAndroidTest("com.google.dagger:hilt-compiler:$hiltVersion")
+    //androidTestImplementation("com.google.dagger:hilt-android-testing:$hiltVersion")
+    //kaptAndroidTest("com.google.dagger:hilt-compiler:$hiltVersion")
     // For local unit tests
-    testImplementation("com.google.dagger:hilt-android-testing:$hiltVersion")
-    kaptTest("com.google.dagger:hilt-compiler:$hiltVersion")
-
-    implementation("androidx.datastore:datastore-preferences:1.0.0")
-
-    implementation("androidx.compose.runtime:runtime:1.6.4")
-}
-
-// Allow references to generated code
-kapt {
-    correctErrorTypes = true
+    //testImplementation("com.google.dagger:hilt-android-testing:$hiltVersion")
+    //kaptTest("com.google.dagger:hilt-compiler:$hiltVersion")
 }

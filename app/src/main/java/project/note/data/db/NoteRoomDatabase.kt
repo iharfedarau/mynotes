@@ -6,9 +6,9 @@ import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
-import project.note.data.Note
+import project.note.data.NoteDto
 
-@Database(entities = [Note::class], version = 2, exportSchema = false)
+@Database(entities = [NoteDto::class], version = 2, exportSchema = false)
 abstract class NoteRoomDatabase : RoomDatabase() {
     abstract fun noteDao(): NoteDao
 
@@ -17,7 +17,7 @@ abstract class NoteRoomDatabase : RoomDatabase() {
         private var INSTANCE: NoteRoomDatabase? = null
 
         private val MIGRATION_1_2: Migration = object : Migration(1, 2) {
-            override fun migrate(database: SupportSQLiteDatabase) {
+            override fun migrate(db: SupportSQLiteDatabase) {
                 // Since we didn't alter the table, there's nothing else to do here.
             }
         }

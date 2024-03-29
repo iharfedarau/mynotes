@@ -4,7 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
-import project.note.data.Note
+import project.note.domain.Note
 import project.note.domain.repository.NoteRepository
 import javax.inject.Inject
 

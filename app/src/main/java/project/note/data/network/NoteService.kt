@@ -1,6 +1,6 @@
 package project.note.data.network
 
-import project.note.data.Note
+import project.note.data.NoteDto
 import retrofit2.Retrofit
 import retrofit2.converter.moshi.MoshiConverterFactory
 import retrofit2.http.Body
@@ -11,13 +11,13 @@ import retrofit2.http.Path
 
 interface NoteService {
     @GET("notes")
-    suspend fun getNotes(): List<Note>
+    suspend fun getNotes(): List<NoteDto>
     @POST("notes")
-    suspend fun insert(@Body note: Note)
+    suspend fun insert(@Body note: NoteDto)
     @DELETE("notes/{id}")
     suspend fun delete(@Path("id") id: Long)
     @POST("notes")
-    suspend fun update(@Body note: Note)
+    suspend fun update(@Body note: NoteDto)
 
     companion object {
         @Volatile

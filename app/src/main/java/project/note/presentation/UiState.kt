@@ -1,6 +1,6 @@
 package project.note.presentation
 
-import project.note.data.Note
+import project.note.domain.Note
 
 sealed interface UiState {
     data object InProgress: UiState

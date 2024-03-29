@@ -13,7 +13,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.unit.dp
-import project.note.data.Note
+import project.note.domain.Note
 
 @Composable
 fun NotesView(notes: List<Note>, onItemClick: (note: Note) -> Unit) {
