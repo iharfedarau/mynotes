@@ -89,10 +89,8 @@ dependencies {
     // Room
     val roomVersion = "2.6.1"
     implementation("androidx.room:room-runtime:$roomVersion")
-    annotationProcessor("androidx.room:room-compiler:$roomVersion")
-    ksp("androidx.room:room-compiler:$roomVersion")
-    // optional - Kotlin Extensions and Coroutines support for Room
     implementation("androidx.room:room-ktx:$roomVersion")
+    ksp("androidx.room:room-compiler:$roomVersion")
 
     // Retrofit
     val retrofitVersion = "2.9.0"
@@ -107,9 +105,9 @@ dependencies {
     implementation("com.google.dagger:hilt-android:$hiltVersion")
     ksp("com.google.dagger:hilt-android-compiler:$hiltVersion")
     // For instrumentation tests
-    //androidTestImplementation("com.google.dagger:hilt-android-testing:$hiltVersion")
-    //kaptAndroidTest("com.google.dagger:hilt-compiler:$hiltVersion")
+    androidTestImplementation("com.google.dagger:hilt-android-testing:$hiltVersion")
+    kspAndroidTest("com.google.dagger:hilt-compiler:$hiltVersion")
     // For local unit tests
-    //testImplementation("com.google.dagger:hilt-android-testing:$hiltVersion")
-    //kaptTest("com.google.dagger:hilt-compiler:$hiltVersion")
+    testImplementation("com.google.dagger:hilt-android-testing:$hiltVersion")
+    kspTest("com.google.dagger:hilt-compiler:$hiltVersion")
 }
