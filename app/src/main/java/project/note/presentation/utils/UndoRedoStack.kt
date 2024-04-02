@@ -48,6 +48,10 @@ class UndoRedoStack(
     }
 
     fun push(value: TextFieldValue) {
+       if (stackPos >= 0 && stack[stackPos].text == value.text && stack[stackPos].selection == value.selection) {
+            return
+        }
+
         stackPos++
 
         if (stack.size > stackPos) {
