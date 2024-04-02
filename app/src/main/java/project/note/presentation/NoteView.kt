@@ -28,15 +28,20 @@ import androidx.compose.material.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.launch
+import project.note.R
 import project.note.domain.Note
+import project.note.presentation.utils.UndoRedoStack
 
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
@@ -47,8 +52,25 @@ fun NoteView(
     save: (Note) -> Unit,
     delete: (Long) -> Unit
 ) {
+    var title by remember { mutableStateOf(note.title) }
+    var content by remember { mutableStateOf(TextFieldValue(note.content)) }
+
     val bottomSheetState = rememberModalBottomSheetState(initialValue = ModalBottomSheetValue.Hidden)
     val coroutineScope = rememberCoroutineScope()
+
+    var canUndo by remember { mutableStateOf(false) }
+    var canRedo by remember {  mutableStateOf(false) }
+
+    val undoRedoStack = remember { UndoRedoStack(note.content) {data,  canUndoIt, canRedoIt ->
+        data?.let {
+            content = it
+        }
+        canUndo = canUndoIt
+        canRedo = canRedoIt
+
+        save(Note(title, content.text, note.id))
+    } }
+
 
     Scaffold(
         modifier = Modifier.padding(paddingValues),
@@ -69,6 +91,24 @@ fun NoteView(
                 },
                 actions = {
                     IconButton(onClick = {
+                        undoRedoStack.undo()
+                    }, enabled = canUndo) {
+                        Icon(
+                            imageVector = ImageVector.vectorResource(id = R.drawable.undo),
+                            contentDescription = null,
+                        )
+                    }
+
+                    IconButton(onClick = {
+                        undoRedoStack.redo()
+                    }, enabled = canRedo) {
+                        Icon(
+                            imageVector = ImageVector.vectorResource(id = R.drawable.redo),
+                            contentDescription = null,
+                        )
+                    }
+
+                    IconButton(onClick = {
                         coroutineScope.launch {
                             bottomSheetState.show()
                         }
@@ -88,19 +128,20 @@ fun NoteView(
                     .padding(it)
                     .fillMaxSize()
             ) {
-                var title by rememberSaveable { mutableStateOf(note.title) }
-                var content by rememberSaveable { mutableStateOf(note.content) }
+
 
                 TextField(title, singleLine = true, modifier = Modifier.fillMaxWidth(),  onValueChange = {
                     if (it.length <= 30) {
                         title = it
-                        save(Note(title, content, note.id))
+                        save(Note(title, content.text, note.id))
                     }
                 })
 
-                TextField(content, modifier = Modifier.fillMaxWidth().fillMaxHeight(1.0f).verticalScroll(rememberScrollState()), onValueChange = {
-                    content = it
-                    save(Note(title, content, note.id))
+                TextField(content, modifier = Modifier
+                    .fillMaxWidth()
+                    .fillMaxHeight(1.0f)
+                    .verticalScroll(rememberScrollState()), onValueChange = {
+                    undoRedoStack.push(it)
                 })
             }
 
@@ -109,7 +150,9 @@ fun NoteView(
                 sheetContent = {
                     LazyColumn(modifier = Modifier.padding(16.dp)) {
                         items(1, itemContent = {
-                            ClickableText(modifier = Modifier.fillMaxWidth().height(48.dp),
+                            ClickableText(modifier = Modifier
+                                .fillMaxWidth()
+                                .height(48.dp),
                                 text = AnnotatedString("Delete"),
                                 onClick = {
                                     delete(note.id)
