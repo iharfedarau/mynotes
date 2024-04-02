@@ -5,16 +5,15 @@ import androidx.compose.ui.text.input.TextFieldValue
 
 class UndoRedoStack(
     initialValue: String,
-    listener: (data: TextFieldValue?, canUndo: Boolean, canRedo: Boolean) -> Unit
+    listener: (data: TextFieldValue, canUndo: Boolean, canRedo: Boolean) -> Unit
 ) {
-    private val stack = mutableListOf<TextFieldValue>()
-    private var stackPos = -1
-    private var actionListener: (data: TextFieldValue?, canUndo: Boolean, canRedo: Boolean) -> Unit =
+    private val stack = mutableListOf(TextFieldValue(initialValue, TextRange(initialValue.length)))
+    private var stackPos = stack.size - 1
+    private var actionListener: (data: TextFieldValue, canUndo: Boolean, canRedo: Boolean) -> Unit =
         listener
-    private val initial: String = initialValue
 
     private fun canUndo(): Boolean {
-        return stackPos >= 0
+        return stackPos >= 1
     }
 
     private fun canRedo(): Boolean {
@@ -24,17 +23,7 @@ class UndoRedoStack(
     fun undo() {
         if (canUndo()) {
             stackPos--
-            if (stackPos >= 0) {
-                actionListener(stack[stackPos], canUndo(), canRedo())
-            } else {
-                actionListener(
-                    TextFieldValue(initial, TextRange(initial.length)),
-                    canUndo(),
-                    canRedo()
-                )
-            }
-        } else {
-            actionListener(if (stackPos >= 0) stack[stackPos] else null, canUndo(), canRedo())
+            actionListener(stack[stackPos], canUndo(), canRedo())
         }
     }
 
@@ -42,13 +31,13 @@ class UndoRedoStack(
         if (canRedo()) {
             stackPos++
             actionListener(stack[stackPos], canUndo(), canRedo())
-        } else {
-            actionListener(if (stackPos >= 0) stack[stackPos] else null, canUndo(), canRedo())
         }
     }
 
     fun push(value: TextFieldValue) {
-       if (stackPos >= 0 && stack[stackPos].text == value.text && stack[stackPos].selection == value.selection) {
+        if (stack[stackPos].text == value.text) {
+            stack[stackPos] = value
+            actionListener(value, canUndo(), canRedo())
             return
         }
 

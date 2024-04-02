@@ -62,9 +62,7 @@ fun NoteView(
     var canRedo by remember {  mutableStateOf(false) }
 
     val undoRedoStack = remember { UndoRedoStack(note.content) {data,  canUndoIt, canRedoIt ->
-        data?.let {
-            content = TextFieldValue(it.text, it.selection, it.composition)
-        }
+        content = data
         canUndo = canUndoIt
         canRedo = canRedoIt
 
