@@ -28,8 +28,8 @@ import androidx.compose.material.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -52,22 +52,30 @@ fun NoteView(
     save: (Note) -> Unit,
     delete: (Long) -> Unit
 ) {
-    var title by remember { mutableStateOf(note.title) }
-    var content by remember { mutableStateOf(TextFieldValue(note.content)) }
+    var title by rememberSaveable { mutableStateOf(note.title) }
+    var content by rememberSaveable(stateSaver = TextFieldValue.Saver) {
+        mutableStateOf(
+            TextFieldValue(note.content)
+        )
+    }
 
-    val bottomSheetState = rememberModalBottomSheetState(initialValue = ModalBottomSheetValue.Hidden)
+    val bottomSheetState =
+        rememberModalBottomSheetState(initialValue = ModalBottomSheetValue.Hidden)
     val coroutineScope = rememberCoroutineScope()
 
-    var canUndo by remember { mutableStateOf(false) }
-    var canRedo by remember {  mutableStateOf(false) }
+    var canUndo by rememberSaveable { mutableStateOf(false) }
+    var canRedo by rememberSaveable { mutableStateOf(false) }
 
-    val undoRedoStack = remember { UndoRedoStack(note.content) {data,  canUndoIt, canRedoIt ->
+    val undoRedoStack by rememberSaveable(stateSaver = UndoRedoStack.Saver) {mutableStateOf( UndoRedoStack()) }
+
+    undoRedoStack.setInitialValue(note.content)
+    undoRedoStack.setListener { data, canUndoIt, canRedoIt ->
         content = data
         canUndo = canUndoIt
         canRedo = canRedoIt
 
         save(Note(title, content.text, note.id))
-    } }
+    }
 
 
     Scaffold(
@@ -128,12 +136,16 @@ fun NoteView(
             ) {
 
 
-                TextField(title, singleLine = true, modifier = Modifier.fillMaxWidth(),  onValueChange = {
-                    if (it.length <= 30) {
-                        title = it
-                        save(Note(title, content.text, note.id))
-                    }
-                })
+                TextField(
+                    title,
+                    singleLine = true,
+                    modifier = Modifier.fillMaxWidth(),
+                    onValueChange = {
+                        if (it.length <= 30) {
+                            title = it
+                            save(Note(title, content.text, note.id))
+                        }
+                    })
 
                 TextField(content, modifier = Modifier
                     .fillMaxWidth()

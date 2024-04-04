@@ -48,19 +48,14 @@ class NoteRepositoryImpl(private val noteService: NoteService,
         return  Note(note.title, note.content, noteDao.insert(note.toNoteDto()))
     }
 
-    override suspend fun insert(notes: List<NoteDto>) {
-        noteDao.insert(notes)
-    }
-
     override suspend fun delete(id: Long) {
-        if (BuildConfig.isNetworkServiceAvailable) {
-            try {
+        try {
+            if (BuildConfig.isNetworkServiceAvailable) {
                 noteService.delete(id)
-            } catch (e: Exception) {
-                println(e.message)
             }
+            noteDao.delete(id)
+        } catch (e: Exception) {
+            println(e.message)
         }
-
-        noteDao.delete(id)
     }
 }

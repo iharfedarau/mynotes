@@ -17,6 +17,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -54,7 +55,7 @@ class MainActivity : ComponentActivity() {
             MaterialTheme {
                 val scaffoldState = rememberScaffoldState()
                 val scope = rememberCoroutineScope()
-                var uiState by remember { mutableStateOf<UiState>(UiState.ShowNotesView) }
+                var uiState by rememberSaveable { mutableStateOf<UiState>(UiState.ShowNotesView) }
                 val notes by noteViewModel.allNotes.collectAsState(initial = emptyList())
 
                 Scaffold(

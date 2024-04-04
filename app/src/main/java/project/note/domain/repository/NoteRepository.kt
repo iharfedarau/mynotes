@@ -13,7 +13,5 @@ interface NoteRepository {
 
     suspend fun insert(note: Note): Note
 
-    suspend fun insert(notes: List<NoteDto>)
-
     suspend fun delete(id: Long)
 }
