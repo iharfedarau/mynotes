@@ -16,8 +16,6 @@ interface NoteService {
     suspend fun insert(@Body note: NoteDto)
     @DELETE("notes/{id}")
     suspend fun delete(@Path("id") id: Long)
-    @POST("notes")
-    suspend fun update(@Body note: NoteDto)
 
     companion object {
         @Volatile

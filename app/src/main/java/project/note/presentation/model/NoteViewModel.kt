@@ -23,7 +23,7 @@ class NoteViewModel @Inject constructor(
     }
 
     fun update(note: Note) = viewModelScope.launch {
-        repository.update(note)
+        repository.insert(note)
     }
 
     private fun refreshData() {

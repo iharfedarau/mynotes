@@ -10,17 +10,17 @@ import project.note.data.NoteDto
 @Dao
 interface NoteDao {
     @Query("SELECT * FROM note_table")
-    fun getNotes(): Flow<List<NoteDto>>
+    fun getAll(): Flow<List<NoteDto>>
 
-    @Insert(onConflict = OnConflictStrategy.IGNORE)
-    suspend fun insertNote(note: NoteDto): Long
+    @Query("SELECT * FROM note_table WHERE id=:id")
+    suspend fun getById(id: Long): NoteDto?
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertAllNote(note: List<NoteDto>)
+    suspend fun insert(note: NoteDto): Long
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insert(notes: List<NoteDto>)
 
     @Query("DELETE FROM note_table WHERE id=:id")
     suspend fun delete(id: Long)
-
-    @Query("UPDATE note_table SET title=:title, content=:content WHERE id=:id")
-    suspend fun update(id: Long, title: String, content: String)
 }
