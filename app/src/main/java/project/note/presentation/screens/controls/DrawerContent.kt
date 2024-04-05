@@ -1,4 +1,4 @@
-package project.note.presentation
+package project.note.presentation.screens.controls
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box

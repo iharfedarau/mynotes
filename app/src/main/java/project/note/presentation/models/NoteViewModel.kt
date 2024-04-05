@@ -18,7 +18,8 @@ import javax.inject.Inject
 @HiltViewModel
 class NoteViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
-    private val repository: NoteRepository): ViewModel() {
+    private val repository: NoteRepository
+) : ViewModel() {
 
     var note by mutableStateOf<Note?>(null)
         private set
@@ -29,27 +30,20 @@ class NoteViewModel @Inject constructor(
     var content by mutableStateOf(TextFieldValue("", TextRange(0)))
         private set
 
-    var canUndo by mutableStateOf(false)
-        private set
-
-    var canRedo by mutableStateOf(false)
-
-    private val undoRedo = UndoRedoStack()
+    val undoRedo = UndoRedoStack()
 
     init {
-        val noteId =  savedStateHandle.get<Long>("noteId")!!
-        if(noteId > -1) {
+        val noteId = savedStateHandle.get<Long>("noteId")!!
+        if (noteId > -1) {
             viewModelScope.launch {
                 repository.getById(noteId)?.let { note ->
                     title = note.title
-                    content = TextFieldValue(note.content, TextRange(note.content.length) )
+                    content = TextFieldValue(note.content, TextRange(note.content.length))
                     this@NoteViewModel.note = note
 
                     undoRedo.setInitialValue(note.content)
-                    undoRedo.setListener { data, canUndo, canRedo ->
+                    undoRedo.setListener { data ->
                         content = data
-                        this@NoteViewModel.canUndo = canUndo
-                        this@NoteViewModel.canRedo = canRedo
                     }
                 }
             }
@@ -61,7 +55,6 @@ class NoteViewModel @Inject constructor(
     }
 
     fun updateContent(content: TextFieldValue) {
-        this.content = content
         undoRedo.push(content)
     }
 

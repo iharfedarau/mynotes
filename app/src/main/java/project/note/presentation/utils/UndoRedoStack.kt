@@ -1,5 +1,8 @@
 package project.note.presentation.utils
 
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.TextFieldValue
 
@@ -7,7 +10,13 @@ class UndoRedoStack {
     private var stack = mutableListOf<TextFieldValue>()
     private var stackPos = -1
 
-    private var actionListener: ((data: TextFieldValue, canUndo: Boolean, canRedo: Boolean) -> Unit)? =
+    var canUndo by mutableStateOf(false)
+        private set
+
+    var canRedo by mutableStateOf(false)
+        private set
+
+    private var actionListener: ((data: TextFieldValue) -> Unit)? =
         null
 
     fun setInitialValue(initialValue: String) {
@@ -17,34 +26,28 @@ class UndoRedoStack {
         }
     }
 
-    fun setListener(listener: (data: TextFieldValue, canUndo: Boolean, canRedo: Boolean) -> Unit) {
+    fun setListener(listener: (data: TextFieldValue) -> Unit) {
         actionListener = listener
     }
 
     fun undo() {
-        if (canUndo()) {
+        if (canUndo) {
             stackPos--
-            actionListener?.let {
-                it(stack[stackPos], canUndo(), canRedo())
-            }
+            updateState(stack[stackPos])
         }
     }
 
     fun redo() {
-        if (canRedo()) {
+        if (canRedo) {
             stackPos++
-            actionListener?.let {
-                it(stack[stackPos], canUndo(), canRedo())
-            }
+            updateState(stack[stackPos])
         }
     }
 
     fun push(value: TextFieldValue) {
         if (stack[stackPos].text == value.text) {
             stack[stackPos] = value
-            actionListener?.let {
-                it(value, canUndo(), canRedo())
-            }
+            updateState(value)
             return
         }
 
@@ -57,16 +60,15 @@ class UndoRedoStack {
             stack.add(value)
         }
 
+        updateState(value)
+    }
+
+    private fun updateState(value: TextFieldValue) {
+        canUndo = stackPos >= 1
+        canRedo = stack.isNotEmpty() && stackPos < stack.size - 1
+
         actionListener?.let {
-            it(value, canUndo(), canRedo())
+            it(value)
         }
-    }
-
-    private fun canUndo(): Boolean {
-        return stackPos >= 1
-    }
-
-    private fun canRedo(): Boolean {
-        return stack.isNotEmpty() && stackPos < stack.size - 1
     }
 }

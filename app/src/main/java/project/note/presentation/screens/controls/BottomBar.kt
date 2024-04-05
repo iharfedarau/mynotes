@@ -1,4 +1,4 @@
-package project.note.presentation
+package project.note.presentation.screens.controls
 
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.material.BottomAppBar

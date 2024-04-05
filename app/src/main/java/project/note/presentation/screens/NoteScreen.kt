@@ -1,4 +1,4 @@
-package project.note.presentation
+package project.note.presentation.screens
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxHeight
@@ -39,7 +39,7 @@ import project.note.presentation.models.NoteViewModel
 
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
-fun NoteView(onBackClick: () -> Unit, viewModel: NoteViewModel = hiltViewModel()) {
+fun NoteScreen(onBackClick: () -> Unit, viewModel: NoteViewModel = hiltViewModel()) {
     val bottomSheetState =
         rememberModalBottomSheetState(initialValue = ModalBottomSheetValue.Hidden)
     val coroutineScope = rememberCoroutineScope()
@@ -64,7 +64,7 @@ fun NoteView(onBackClick: () -> Unit, viewModel: NoteViewModel = hiltViewModel()
                 actions = {
                     IconButton(onClick = {
                         viewModel.undo()
-                    }, enabled = viewModel.canUndo) {
+                    }, enabled = viewModel.undoRedo.canUndo) {
                         Icon(
                             imageVector = ImageVector.vectorResource(id = R.drawable.undo),
                             contentDescription = null,
@@ -73,7 +73,7 @@ fun NoteView(onBackClick: () -> Unit, viewModel: NoteViewModel = hiltViewModel()
 
                     IconButton(onClick = {
                         viewModel.redo()
-                    }, enabled = viewModel.canRedo) {
+                    }, enabled = viewModel.undoRedo.canRedo) {
                         Icon(
                             imageVector = ImageVector.vectorResource(id = R.drawable.redo),
                             contentDescription = null,

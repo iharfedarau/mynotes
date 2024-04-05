@@ -13,6 +13,8 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import dagger.hilt.android.AndroidEntryPoint
 import project.note.presentation.utils.Routes
+import project.note.presentation.screens.NoteScreen
+import project.note.presentation.screens.NotesScreen
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
@@ -36,7 +38,7 @@ class MainActivity : ComponentActivity() {
                     startDestination = Routes.NOTES_VIEW
                 ) {
                     composable(Routes.NOTES_VIEW) {
-                        NotesView(onItemClick = {note ->
+                        NotesScreen(onItemClick = {note ->
                             navController.navigate(Routes.NOTE_VIEW + "/${note.id}")
                         })
                     }
@@ -50,7 +52,7 @@ class MainActivity : ComponentActivity() {
                             }
                         )
                         ) {
-                        NoteView(onBackClick = {
+                        NoteScreen(onBackClick = {
                             navController.navigate(Routes.NOTES_VIEW)
                         })
                     }

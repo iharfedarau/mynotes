@@ -1,4 +1,4 @@
-package project.note.presentation
+package project.note.presentation.screens
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -30,9 +30,12 @@ import project.note.domain.Note
 import project.note.presentation.models.NotesViewModel
 import androidx.hilt.navigation.compose.hiltViewModel
 import kotlinx.coroutines.launch
+import project.note.presentation.screens.controls.BottomBar
+import project.note.presentation.screens.controls.DrawerContent
+import project.note.presentation.screens.controls.FloatingActionButton
 
 @Composable
-fun NotesView(onItemClick: (note: Note) -> Unit,
+fun NotesScreen(onItemClick: (note: Note) -> Unit,
               viewModel: NotesViewModel = hiltViewModel()) {
     val scaffoldState = rememberScaffoldState()
     var inProgress by rememberSaveable {

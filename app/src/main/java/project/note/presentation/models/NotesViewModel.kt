@@ -18,14 +18,6 @@ class NotesViewModel @Inject constructor(
         callback(repository.insert(note))
     }
 
-    fun delete(id: Long) = viewModelScope.launch {
-        repository.delete(id)
-    }
-
-    fun update(note: Note) = viewModelScope.launch {
-        repository.insert(note)
-    }
-
     private fun refreshData() {
         viewModelScope.launch {
             repository.refreshNotes()
