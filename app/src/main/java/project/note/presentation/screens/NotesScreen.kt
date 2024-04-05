@@ -94,8 +94,7 @@ fun NotesScreen(onItemClick: (note: Note) -> Unit,
                 LazyColumn(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(paddings),
-                    verticalArrangement = Arrangement.spacedBy(24.dp)
+                        .padding(paddings)
                 ) {
                     itemsIndexed(items = notes,
                         itemContent = { _, item ->
