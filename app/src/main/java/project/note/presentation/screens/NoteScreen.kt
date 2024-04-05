@@ -8,7 +8,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
@@ -36,7 +35,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.vectorResource
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -113,7 +111,9 @@ fun NoteScreen(onBackClick: () -> Unit, viewModel: NoteViewModel = hiltViewModel
                 TextField(
                     title,
                     singleLine = true,
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(64.dp),
                     onValueChange = {
                         if (it.length <= 30) {
                             viewModel.updateTitle(it)
@@ -130,6 +130,7 @@ fun NoteScreen(onBackClick: () -> Unit, viewModel: NoteViewModel = hiltViewModel
 
             if (showBottomSheet) {
                 CustomBottomSheet(onDeleteAction = {
+                    showBottomSheet = false
                     onBackClick()
                     viewModel.delete()
                 }, onDismiss = {
@@ -171,12 +172,19 @@ fun CustomBottomSheetContainer(onDeleteAction: () -> Unit) {
         }
     }) {
         Column(modifier = Modifier.padding(it)) {
-            Text(text = "Delete",  textAlign = TextAlign.Center,  modifier = Modifier
+            Box(modifier = Modifier
                 .fillMaxWidth()
-                .height(48.dp)
+                .height(64.dp)
                 .clickable {
                     onDeleteAction()
-                })
+                }, contentAlignment = Alignment.CenterStart) {
+                Text(
+                    text = "Delete",
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp)
+                )
+            }
         }
     }
 }
