@@ -1,4 +1,4 @@
-package project.note.presentation.model
+package project.note.presentation.models
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -9,7 +9,7 @@ import project.note.domain.repository.NoteRepository
 import javax.inject.Inject
 
 @HiltViewModel
-class NoteViewModel @Inject constructor(
+class NotesViewModel @Inject constructor(
     private val repository: NoteRepository
 ) : ViewModel() {
     val allNotes = repository.allNotes()

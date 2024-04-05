@@ -105,6 +105,7 @@ dependencies {
     //DI
     val hiltVersion = "2.51"
     implementation("com.google.dagger:hilt-android:$hiltVersion")
+    implementation("androidx.hilt:hilt-navigation-compose:1.2.0")
     ksp("com.google.dagger:hilt-android-compiler:$hiltVersion")
     // For instrumentation tests
     androidTestImplementation("com.google.dagger:hilt-android-testing:$hiltVersion")

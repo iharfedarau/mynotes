@@ -8,7 +8,7 @@ import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
 import project.note.data.NoteDto
 
-@Database(entities = [NoteDto::class], version = 2, exportSchema = false)
+@Database(entities = [NoteDto::class], version = 3, exportSchema = false)
 abstract class NoteRoomDatabase : RoomDatabase() {
     abstract fun noteDao(): NoteDao
 
@@ -22,6 +22,24 @@ abstract class NoteRoomDatabase : RoomDatabase() {
             }
         }
 
+        private val MIGRATION_2_3: Migration = object : Migration(2, 3) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                // Create the new table
+                db.execSQL(
+                    "CREATE TABLE note_table_new (title TEXT NOT NULL, content TEXT NOT NULL, id INTEGER NULL, PRIMARY KEY(id))")
+
+                // Copy the data
+                db.execSQL(
+                    "INSERT INTO note_table_new (title, content, id) SELECT title, content, id FROM note_table")
+
+                // Remove the old table
+                db.execSQL("DROP TABLE note_table")
+
+                // Change the table name to the correct one
+                db.execSQL("ALTER TABLE note_table_new RENAME TO note_table");
+            }
+        }
+
         fun getDatabase(context: Context): NoteRoomDatabase {
             return INSTANCE ?: synchronized(this) {
                 val instance = Room.databaseBuilder(
@@ -29,7 +47,7 @@ abstract class NoteRoomDatabase : RoomDatabase() {
                     NoteRoomDatabase::class.java,
                     "note_database"
                 )
-                    .addMigrations(MIGRATION_1_2)
+                    .addMigrations(MIGRATION_1_2, MIGRATION_2_3)
                     .build()
                 INSTANCE = instance
                 instance

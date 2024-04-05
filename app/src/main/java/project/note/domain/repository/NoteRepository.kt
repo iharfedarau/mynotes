@@ -7,7 +7,7 @@ import project.note.domain.Note
 interface NoteRepository {
     fun  allNotes(): Flow<List<Note>>
 
-    suspend fun getById(id: Long): NoteDto?
+    suspend fun getById(id: Long): Note?
 
     suspend fun refreshNotes()
 

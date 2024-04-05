@@ -10,8 +10,12 @@ import java.io.Serializable
 data class NoteDto (
     @ColumnInfo(name = "title") val title: String,
     @ColumnInfo(name = "content") val content: String,
-    @PrimaryKey(autoGenerate = true) val id: Long = 0): Serializable
+    @PrimaryKey(autoGenerate = true) val id: Long? = null): Serializable
 
 fun Note.toNoteDto(): NoteDto {
     return NoteDto(title, content, id)
+}
+
+fun NoteDto.toNote(): Note {
+    return Note(title, content, id)
 }

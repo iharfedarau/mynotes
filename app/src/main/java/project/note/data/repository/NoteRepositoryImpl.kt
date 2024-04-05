@@ -6,6 +6,7 @@ import project.note.BuildConfig
 import project.note.data.NoteDto
 import project.note.data.db.NoteDao
 import project.note.data.network.NoteService
+import project.note.data.toNote
 import project.note.data.toNoteDto
 import project.note.domain.Note
 import project.note.domain.repository.NoteRepository
@@ -22,8 +23,8 @@ class NoteRepositoryImpl(private val noteService: NoteService,
         }
     }
 
-    override suspend fun getById(id: Long): NoteDto? {
-        return noteDao.getById(id)
+    override suspend fun getById(id: Long): Note? {
+        return noteDao.getById(id)?.toNote()
     }
 
     override  suspend fun refreshNotes() {

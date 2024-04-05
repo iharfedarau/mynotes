@@ -1,7 +1,6 @@
 package project.note.presentation
 
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -26,65 +25,32 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.AnnotatedString
-import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
 import kotlinx.coroutines.launch
 import project.note.R
-import project.note.domain.Note
-import project.note.presentation.utils.UndoRedoStack
+import project.note.presentation.models.NoteViewModel
 
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
-fun NoteView(
-    note: Note,
-    paddingValues: PaddingValues,
-    back: () -> Unit,
-    save: (Note) -> Unit,
-    delete: (Long) -> Unit
-) {
-    var title by rememberSaveable { mutableStateOf(note.title) }
-    var content by rememberSaveable(stateSaver = TextFieldValue.Saver) {
-        mutableStateOf(
-            TextFieldValue(note.content)
-        )
-    }
-
+fun NoteView(onBackClick: () -> Unit, viewModel: NoteViewModel = hiltViewModel()) {
     val bottomSheetState =
         rememberModalBottomSheetState(initialValue = ModalBottomSheetValue.Hidden)
     val coroutineScope = rememberCoroutineScope()
 
-    var canUndo by rememberSaveable { mutableStateOf(false) }
-    var canRedo by rememberSaveable { mutableStateOf(false) }
-
-    val undoRedoStack by rememberSaveable(stateSaver = UndoRedoStack.Saver) {mutableStateOf( UndoRedoStack()) }
-
-    undoRedoStack.setInitialValue(note.content)
-    undoRedoStack.setListener { data, canUndoIt, canRedoIt ->
-        content = data
-        canUndo = canUndoIt
-        canRedo = canRedoIt
-
-        save(Note(title, content.text, note.id))
-    }
-
-
     Scaffold(
-        modifier = Modifier.padding(paddingValues),
         topBar = {
             TopAppBar(
                 navigationIcon = {
                     IconButton(onClick = {
-                        back()
+                        viewModel.save()
+                        onBackClick()
                     }) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
@@ -97,8 +63,8 @@ fun NoteView(
                 },
                 actions = {
                     IconButton(onClick = {
-                        undoRedoStack.undo()
-                    }, enabled = canUndo) {
+                        viewModel.undo()
+                    }, enabled = viewModel.canUndo) {
                         Icon(
                             imageVector = ImageVector.vectorResource(id = R.drawable.undo),
                             contentDescription = null,
@@ -106,8 +72,8 @@ fun NoteView(
                     }
 
                     IconButton(onClick = {
-                        undoRedoStack.redo()
-                    }, enabled = canRedo) {
+                        viewModel.redo()
+                    }, enabled = viewModel.canRedo) {
                         Icon(
                             imageVector = ImageVector.vectorResource(id = R.drawable.redo),
                             contentDescription = null,
@@ -135,23 +101,22 @@ fun NoteView(
                     .fillMaxSize()
             ) {
 
-
+                val title = viewModel.title
                 TextField(
                     title,
                     singleLine = true,
                     modifier = Modifier.fillMaxWidth(),
                     onValueChange = {
                         if (it.length <= 30) {
-                            title = it
-                            save(Note(title, content.text, note.id))
+                            viewModel.updateTitle(it)
                         }
                     })
 
-                TextField(content, modifier = Modifier
+                TextField(viewModel.content, modifier = Modifier
                     .fillMaxWidth()
                     .fillMaxHeight(1.0f)
                     .verticalScroll(rememberScrollState()), onValueChange = {
-                    undoRedoStack.push(it)
+                    viewModel.updateContent(it)
                 })
             }
 
@@ -165,7 +130,8 @@ fun NoteView(
                                 .height(48.dp),
                                 text = AnnotatedString("Delete"),
                                 onClick = {
-                                    delete(note.id)
+                                    viewModel.delete()
+                                    onBackClick()
                                 })
                             Divider(color = Color.Black, thickness = 1.dp)
                         })
