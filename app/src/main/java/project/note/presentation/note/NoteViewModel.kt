@@ -1,4 +1,4 @@
-package project.note.presentation.models
+package project.note.presentation.note
 
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf

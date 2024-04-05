@@ -1,4 +1,4 @@
-package project.note.presentation.screens
+package project.note.presentation.notes
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
@@ -34,15 +34,12 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import project.note.domain.Note
-import project.note.presentation.models.NotesViewModel
 import androidx.hilt.navigation.compose.hiltViewModel
 import kotlinx.coroutines.launch
 import me.saket.swipe.SwipeAction
 import me.saket.swipe.SwipeableActionsBox
 import project.note.BuildConfig
 import project.note.R
-import project.note.presentation.screens.controls.BottomBar
-import project.note.presentation.screens.controls.FloatingActionButton
 
 @Composable
 fun NotesScreen(onItemClick: (note: Note) -> Unit,

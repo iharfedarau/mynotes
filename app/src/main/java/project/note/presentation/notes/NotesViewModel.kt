@@ -1,4 +1,4 @@
-package project.note.presentation.models
+package project.note.presentation.notes
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope

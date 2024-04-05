@@ -1,4 +1,4 @@
-package project.note.presentation.screens.controls
+package project.note.presentation.notes
 
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.material.icons.Icons

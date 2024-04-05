@@ -1,4 +1,4 @@
-package project.note.presentation.screens.controls
+package project.note.presentation.notes
 
 
 import androidx.compose.material3.ExtendedFloatingActionButton

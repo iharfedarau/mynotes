@@ -1,4 +1,4 @@
-package project.note.presentation.screens
+package project.note.presentation.note
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
@@ -40,7 +40,6 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import kotlinx.coroutines.launch
 import project.note.R
-import project.note.presentation.models.NoteViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
