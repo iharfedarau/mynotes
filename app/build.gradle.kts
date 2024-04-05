@@ -103,6 +103,9 @@ dependencies {
     // Splashscreen
     implementation("androidx.core:core-splashscreen:1.0.1")
 
+    //Swipe
+    implementation("me.saket.swipe:swipe:1.3.0")
+
     //DI
     val hiltVersion = "2.51"
     implementation("com.google.dagger:hilt-android:$hiltVersion")

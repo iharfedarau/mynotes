@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.HorizontalDivider
@@ -36,6 +37,8 @@ import project.note.domain.Note
 import project.note.presentation.models.NotesViewModel
 import androidx.hilt.navigation.compose.hiltViewModel
 import kotlinx.coroutines.launch
+import me.saket.swipe.SwipeAction
+import me.saket.swipe.SwipeableActionsBox
 import project.note.BuildConfig
 import project.note.R
 import project.note.presentation.screens.controls.BottomBar
@@ -97,14 +100,38 @@ fun NotesScreen(onItemClick: (note: Note) -> Unit,
                 ) {
                     itemsIndexed(items = notes,
                         itemContent = { _, item ->
-                            Box(modifier = Modifier.fillMaxWidth().height(64.dp).clickable{
-                                onItemClick(item)
-                            }, contentAlignment = Alignment.CenterStart) {
-                                Text(text = item.title,
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .padding(16.dp))
+                            val delete = SwipeAction(
+                                onSwipe = {
+                                    item.id?.let {
+                                        viewModel.delete(it)
+                                    }
+                                },
+                                icon = {
+                                    Icon(
+                                        Icons.Default.Delete,
+                                        contentDescription = "Delete chat",
+                                        modifier = Modifier.padding(16.dp),
+                                        tint = Color.White
+                                    )
+                                }, background = Color.Red.copy(alpha = 0.5f),
+                                isUndo = true
+                            )
+
+                            SwipeableActionsBox(
+                                modifier = Modifier,
+                                swipeThreshold = 200.dp,
+                                endActions = listOf(delete)
+                            ) {
+                                Box(modifier = Modifier.fillMaxWidth().height(64.dp).clickable{
+                                    onItemClick(item)
+                                }, contentAlignment = Alignment.CenterStart) {
+                                    Text(text = item.title,
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .padding(16.dp))
+                                }
                             }
+
                             HorizontalDivider(thickness = 1.dp, color = Color.Black)
                         })
                 }
