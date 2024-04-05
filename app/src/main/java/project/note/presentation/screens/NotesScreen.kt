@@ -1,6 +1,8 @@
 package project.note.presentation.screens
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -9,6 +11,7 @@ import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.text.ClickableText
 import androidx.compose.material.Divider
 import androidx.compose.material.Scaffold
+import androidx.compose.material.Text
 import androidx.compose.material.rememberScaffoldState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -54,22 +57,21 @@ fun NotesScreen(onItemClick: (note: Note) -> Unit,
         }
     ) { paddings ->
         val notes by viewModel.allNotes.collectAsState(initial = emptyList())
-
         LazyColumn(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(paddings),
+                .padding(16.dp, 16.dp, 16.dp, paddings.calculateBottomPadding()),
             verticalArrangement = Arrangement.spacedBy(24.dp)
         ) {
             itemsIndexed(items = notes,
                 itemContent = { _, item ->
-                    ClickableText(modifier = Modifier
+                    Text(text = item.title,
+                        modifier = Modifier
                         .fillMaxWidth()
-                        .height(48.dp),
-                        text = AnnotatedString(item.title),
-                        onClick = {
-                            onItemClick(item)
-                        })
+                        .height(48.dp)
+                            .clickable {
+                                onItemClick(item)
+                            })
                     Divider(color = Color.Black, thickness = 1.dp)
                 })
         }
