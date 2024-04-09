@@ -1,19 +1,19 @@
 package project.note.presentation.note
 
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.Button
@@ -49,8 +49,13 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import kotlinx.coroutines.launch
 import project.note.R
-import java.time.format.DateTimeFormatter
-import java.util.Date
+import project.note.presentation.utils.toFormattedDateTime
+import project.note.presentation.utils.toLocalDate
+import project.note.presentation.utils.toLocalDateTime
+import project.note.presentation.utils.toLong
+import java.time.LocalDateTime
+import java.time.LocalTime
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -58,14 +63,12 @@ fun NoteScreen(onBackClick: () -> Unit, viewModel: NoteViewModel = hiltViewModel
     val coroutineScope = rememberCoroutineScope()
     var showBottomSheet by rememberSaveable {  mutableStateOf(false) }
 
-    val alarmDate: Long? = viewModel.alarmDate?.toInstant()?.toEpochMilli()
-    val hours: Int? = if (viewModel.alarmDate != null) viewModel.alarmDate?.hours else null
-    val minutes: Int? = if (viewModel.alarmDate != null) viewModel.alarmDate?.minutes else null
+    val ldt = viewModel.alarmDate?.toLocalDateTime()
 
-    val timePickerState = rememberTimePickerState(initialHour = hours ?: 0, initialMinute = minutes ?: 0)
+    val timePickerState = rememberTimePickerState(initialHour = ldt?.hour?: 0, initialMinute = ldt?.minute ?: 0)
     var showTimePicker by remember { mutableStateOf(false) }
 
-    val datePickerState = rememberDatePickerState(alarmDate)
+    val datePickerState = rememberDatePickerState(initialSelectedDateMillis = viewModel.alarmDate)
     var showDatePicker by remember { mutableStateOf(false) }
 
     Scaffold(
@@ -128,15 +131,24 @@ fun NoteScreen(onBackClick: () -> Unit, viewModel: NoteViewModel = hiltViewModel
                 val title = viewModel.title
                 
                 if (viewModel.alarmDate != null) {
-                    val timestampAsDateString = DateTimeFormatter.ISO_INSTANT
-                        .format(java.time.Instant.ofEpochMilli(viewModel.alarmDate?.toInstant()?.toEpochMilli() ?: 0))
-
-                    Row (modifier = Modifier
-                        .fillMaxWidth()
-                        .height(24.dp),) {
-                        Text(text = timestampAsDateString)
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(48.dp),
+                        Arrangement.SpaceBetween
+                    ) {
                         IconButton(onClick = {
 
+                        }) {
+                            Icon(
+                                imageVector = Icons.Filled.DateRange,
+                                contentDescription = null,
+                            )
+                        }
+                        Text(text = viewModel.alarmDate?.toFormattedDateTime() ?: "")
+
+                        IconButton(onClick = {
+                            viewModel.updateAlarmDate(null)
                         }) {
                             Icon(
                                 imageVector = Icons.Filled.Delete,
@@ -212,11 +224,7 @@ fun NoteScreen(onBackClick: () -> Unit, viewModel: NoteViewModel = hiltViewModel
                     }
                 )
                 {
-                    DatePicker(state = datePickerState.apply {
-                        viewModel.alarmDate?.toInstant()?.toEpochMilli()?.let {
-                            selectedDateMillis = it
-                        }
-                    })
+                    DatePicker(state = datePickerState)
                 }
             }
 
@@ -231,11 +239,8 @@ fun NoteScreen(onBackClick: () -> Unit, viewModel: NoteViewModel = hiltViewModel
                     onConfirm = {
                         showTimePicker = false
 
-                        datePickerState.selectedDateMillis?.let { date ->
-                            viewModel.updateAlarmDate( Date(date).apply {
-                                this.hours = timePickerState.hour
-                                this.minutes = timePickerState.minute
-                            })
+                        datePickerState.selectedDateMillis?.let {
+                            viewModel.updateAlarmDate(LocalDateTime.of(it.toLocalDate(), LocalTime.of(timePickerState.hour, timePickerState.minute)).toLong())
                         }
                     })
             }
@@ -267,19 +272,20 @@ fun CustomBottomSheetContainer(action: (CustomBottomSheetAction) -> Unit) {
         Column {
             Text(
                 text = "Note actions", modifier = Modifier
-                    .height(75.dp)
-                    .padding(start = 29.dp, top = 26.dp), fontSize = 23.sp
+                    .height(48.dp), fontSize = 23.sp
             )
-            HorizontalDivider(thickness = 1.dp, color = Color.Black)
+            HorizontalDivider(thickness = 1.dp, color = Color.DarkGray)
         }
     }) {
         Column(modifier = Modifier.padding(it)) {
-            CustomBottomSheetItem(stringResource(id = R.string.delete)) {
-                action(CustomBottomSheetAction.Delete)
-            }
-
             CustomBottomSheetItem(stringResource(id = R.string.set_alarm)) {
                 action(CustomBottomSheetAction.SetAlarm)
+            }
+
+            HorizontalDivider(thickness = 1.dp, color = Color.LightGray)
+
+            CustomBottomSheetItem(stringResource(id = R.string.delete)) {
+                action(CustomBottomSheetAction.Delete)
             }
         }
     }

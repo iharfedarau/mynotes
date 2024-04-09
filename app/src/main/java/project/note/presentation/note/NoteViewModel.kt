@@ -12,18 +12,22 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
 import project.note.domain.Note
 import project.note.domain.repository.NoteRepository
+import project.note.presentation.alarm.AlarmItem
+import project.note.presentation.alarm.AlarmScheduler
+
 import project.note.presentation.utils.UndoRedoStack
+import project.note.presentation.utils.toLocalDateTime
 import java.util.Calendar
-import java.util.Date
 import javax.inject.Inject
+
 
 @HiltViewModel
 class NoteViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
-    private val repository: NoteRepository
+    private val repository: NoteRepository,
+    private val alarmScheduler: AlarmScheduler
 ) : ViewModel() {
-
-    var alarmDate by mutableStateOf<Date?>(null)
+    var alarmDate by mutableStateOf<Long?>(null)
         private set
 
     var note by mutableStateOf<Note?>(null)
@@ -42,7 +46,7 @@ class NoteViewModel @Inject constructor(
         if (noteId > -1) {
             viewModelScope.launch {
                 repository.getById(noteId)?.let { note ->
-                    alarmDate = if (note.alarmDate != null) Date(note.alarmDate) else null
+                    alarmDate = note.alarmDate
                     title = note.title
                     content = TextFieldValue(note.content, TextRange(note.content.length))
                     this@NoteViewModel.note = note
@@ -56,7 +60,13 @@ class NoteViewModel @Inject constructor(
         }
     }
 
-    fun updateAlarmDate(alarmDate: Date) {
+    fun updateAlarmDate(alarmDate: Long?) {
+        if (alarmDate == null) {
+            this.alarmDate?.let {
+                alarmScheduler.cancel(AlarmItem(it.toLocalDateTime(), "!!!!!!!!!!"))
+            }
+        }
+
         this.alarmDate = alarmDate
     }
 
@@ -83,10 +93,14 @@ class NoteViewModel @Inject constructor(
                     title =  title,
                     content = content.text,
                     modificationDate =  Calendar.getInstance().timeInMillis,
-                    alarmDate= alarmDate?.toInstant()?.toEpochMilli(),
+                    alarmDate= alarmDate,
                     id = note?.id
                 )
             )
+        }
+
+        alarmDate?.let {
+            alarmScheduler.schedule(AlarmItem(it.toLocalDateTime(), "!!!!!!!!!!"))
         }
     }
 
