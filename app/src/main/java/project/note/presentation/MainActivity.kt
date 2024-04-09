@@ -4,7 +4,6 @@ import android.os.Bundle
 import android.view.WindowManager
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.compose.material3.MaterialTheme
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
@@ -15,6 +14,7 @@ import dagger.hilt.android.AndroidEntryPoint
 import project.note.presentation.utils.Routes
 import project.note.presentation.note.NoteScreen
 import project.note.presentation.notes.NotesScreen
+import project.note.presentation.ui.NoteAppTheme
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
@@ -31,7 +31,7 @@ class MainActivity : ComponentActivity() {
             }
 
         setContent {
-            MaterialTheme {
+            NoteAppTheme {
                 val navController = rememberNavController()
                 NavHost(
                     navController = navController,
