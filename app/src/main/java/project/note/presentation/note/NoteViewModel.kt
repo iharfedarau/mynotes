@@ -13,6 +13,7 @@ import kotlinx.coroutines.launch
 import project.note.domain.Note
 import project.note.domain.repository.NoteRepository
 import project.note.presentation.utils.UndoRedoStack
+import java.util.Calendar
 import javax.inject.Inject
 
 @HiltViewModel
@@ -68,7 +69,7 @@ class NoteViewModel @Inject constructor(
 
     fun save() {
         viewModelScope.launch {
-            repository.insert(Note(title, content.text, note?.id))
+            repository.insert(Note(title, content.text, Calendar.getInstance().timeInMillis, note?.id))
         }
     }
 

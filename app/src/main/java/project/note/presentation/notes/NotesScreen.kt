@@ -40,6 +40,7 @@ import me.saket.swipe.SwipeAction
 import me.saket.swipe.SwipeableActionsBox
 import project.note.BuildConfig
 import project.note.R
+import java.util.Calendar
 
 @Composable
 fun NotesScreen(onItemClick: (note: Note) -> Unit,
@@ -76,7 +77,7 @@ fun NotesScreen(onItemClick: (note: Note) -> Unit,
             Scaffold(
                 floatingActionButton = {
                     FloatingActionButton {
-                        viewModel.insert(Note("Unknown", "")) {
+                        viewModel.insert(Note("Unknown", "", Calendar.getInstance().timeInMillis)) {
                             onItemClick(it)
                         }
                     }

@@ -10,12 +10,13 @@ import java.io.Serializable
 data class NoteDto (
     @ColumnInfo(name = "title") val title: String,
     @ColumnInfo(name = "content") val content: String,
+    @ColumnInfo(name = "modification_date") val modificationDate: Long,
     @PrimaryKey(autoGenerate = true) val id: Long? = null): Serializable
 
 fun Note.toNoteDto(): NoteDto {
-    return NoteDto(title, content, id)
+    return NoteDto(title, content, modificationDate, id)
 }
 
 fun NoteDto.toNote(): Note {
-    return Note(title, content, id)
+    return Note(title, content, modificationDate, id)
 }

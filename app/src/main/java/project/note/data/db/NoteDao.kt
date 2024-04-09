@@ -9,7 +9,7 @@ import project.note.data.NoteDto
 
 @Dao
 interface NoteDao {
-    @Query("SELECT * FROM note_table")
+    @Query("SELECT * FROM note_table ORDER BY modification_date DESC")
     fun getAll(): Flow<List<NoteDto>>
 
     @Query("SELECT * FROM note_table WHERE id=:id")

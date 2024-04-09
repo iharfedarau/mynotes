@@ -3,7 +3,6 @@ package project.note.data.repository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import project.note.BuildConfig
-import project.note.data.NoteDto
 import project.note.data.db.NoteDao
 import project.note.data.network.NoteService
 import project.note.data.toNote
@@ -18,7 +17,7 @@ class NoteRepositoryImpl(private val noteService: NoteService,
     override fun allNotes(): Flow<List<Note>> {
         return noteDao.getAll().map { noteDtoList ->
             noteDtoList.map { noteDto ->
-                Note(noteDto.title, noteDto.content, noteDto.id)
+                Note(noteDto.title, noteDto.content, noteDto.modificationDate, noteDto.id)
             }
         }
     }
@@ -46,7 +45,7 @@ class NoteRepositoryImpl(private val noteService: NoteService,
             }
         }
 
-        return  Note(note.title, note.content, noteDao.insert(note.toNoteDto()))
+        return note.copy( id = noteDao.insert(note.toNoteDto()) )
     }
 
     override suspend fun delete(id: Long) {
