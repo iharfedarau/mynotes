@@ -11,12 +11,13 @@ data class NoteDto (
     @ColumnInfo(name = "title") val title: String,
     @ColumnInfo(name = "content") val content: String,
     @ColumnInfo(name = "modification_date") val modificationDate: Long,
+    @ColumnInfo(name = "alarm_date") val alarmDate: Long? = null,
     @PrimaryKey(autoGenerate = true) val id: Long? = null): Serializable
 
 fun Note.toNoteDto(): NoteDto {
-    return NoteDto(title, content, modificationDate, id)
+    return NoteDto(title, content, modificationDate, alarmDate,  id)
 }
 
 fun NoteDto.toNote(): Note {
-    return Note(title, content, modificationDate, id)
+    return Note(title, content, modificationDate, alarmDate, id)
 }

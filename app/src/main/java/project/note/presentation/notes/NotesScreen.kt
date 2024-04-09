@@ -107,7 +107,7 @@ fun NotesScreen(onItemClick: (note: Note) -> Unit,
                                 icon = {
                                     Icon(
                                         Icons.Default.Delete,
-                                        contentDescription = "Delete chat",
+                                        contentDescription = null,
                                         modifier = Modifier.padding(16.dp),
                                         tint = Color.White
                                     )

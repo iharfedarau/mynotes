@@ -1,19 +1,24 @@
 package project.note.presentation.note
 
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material3.Button
+import androidx.compose.material3.DatePicker
+import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -22,32 +27,46 @@ import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
+import androidx.compose.material3.TimePicker
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.material3.rememberModalBottomSheetState
+import androidx.compose.material3.rememberTimePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import kotlinx.coroutines.launch
 import project.note.R
+import java.time.format.DateTimeFormatter
+import java.util.Date
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun NoteScreen(onBackClick: () -> Unit, viewModel: NoteViewModel = hiltViewModel()) {
     val coroutineScope = rememberCoroutineScope()
-    var showBottomSheet by rememberSaveable {
-        mutableStateOf(false)
-    }
+    var showBottomSheet by rememberSaveable {  mutableStateOf(false) }
+
+    val alarmDate: Long? = viewModel.alarmDate?.toInstant()?.toEpochMilli()
+    val hours: Int? = if (viewModel.alarmDate != null) viewModel.alarmDate?.hours else null
+    val minutes: Int? = if (viewModel.alarmDate != null) viewModel.alarmDate?.minutes else null
+
+    val timePickerState = rememberTimePickerState(initialHour = hours ?: 0, initialMinute = minutes ?: 0)
+    var showTimePicker by remember { mutableStateOf(false) }
+
+    val datePickerState = rememberDatePickerState(alarmDate)
+    var showDatePicker by remember { mutableStateOf(false) }
 
     Scaffold(
         topBar = {
@@ -107,6 +126,26 @@ fun NoteScreen(onBackClick: () -> Unit, viewModel: NoteViewModel = hiltViewModel
             ) {
 
                 val title = viewModel.title
+                
+                if (viewModel.alarmDate != null) {
+                    val timestampAsDateString = DateTimeFormatter.ISO_INSTANT
+                        .format(java.time.Instant.ofEpochMilli(viewModel.alarmDate?.toInstant()?.toEpochMilli() ?: 0))
+
+                    Row (modifier = Modifier
+                        .fillMaxWidth()
+                        .height(24.dp),) {
+                        Text(text = timestampAsDateString)
+                        IconButton(onClick = {
+
+                        }) {
+                            Icon(
+                                imageVector = Icons.Filled.Delete,
+                                contentDescription = null,
+                            )
+                        }
+                    }
+                }
+                
                 TextField(
                     title,
                     singleLine = true,
@@ -128,13 +167,77 @@ fun NoteScreen(onBackClick: () -> Unit, viewModel: NoteViewModel = hiltViewModel
             }
 
             if (showBottomSheet) {
-                CustomBottomSheet(onDeleteAction = {
+                CustomBottomSheet {
                     showBottomSheet = false
-                    onBackClick()
-                    viewModel.delete()
-                }, onDismiss = {
-                    showBottomSheet = false
-                })
+
+                    when (it) {
+                        CustomBottomSheetAction.Delete -> {
+                            onBackClick()
+                            viewModel.delete()
+                        }
+
+                        CustomBottomSheetAction.Dismiss -> {
+                            showBottomSheet = false
+                        }
+
+                        CustomBottomSheetAction.SetAlarm -> {
+                            showDatePicker = true
+                        }
+                    }
+
+                }
+            }
+
+            if (showDatePicker) {
+                DatePickerDialog(
+                    onDismissRequest = {
+                        showDatePicker = false
+                    },
+                    confirmButton = {
+                        Button(onClick = {
+                            showDatePicker = false
+                            showTimePicker = true
+                        }
+
+                        ) {
+                            Text(text = "OK")
+                        }
+                    },
+                    dismissButton = {
+                        Button(onClick = {
+                            showDatePicker = false
+                        }) {
+                            Text(text = "Cancel")
+                        }
+                    }
+                )
+                {
+                    DatePicker(state = datePickerState.apply {
+                        viewModel.alarmDate?.toInstant()?.toEpochMilli()?.let {
+                            selectedDateMillis = it
+                        }
+                    })
+                }
+            }
+
+            if (showTimePicker) {
+                TimePickerDialog(
+                    content = {
+                        TimePicker(state = timePickerState)
+                    },
+                    onCancel = {
+                        showTimePicker = false
+                    },
+                    onConfirm = {
+                        showTimePicker = false
+
+                        datePickerState.selectedDateMillis?.let { date ->
+                            viewModel.updateAlarmDate( Date(date).apply {
+                                this.hours = timePickerState.hour
+                                this.minutes = timePickerState.minute
+                            })
+                        }
+                    })
             }
         }
     )
@@ -142,24 +245,24 @@ fun NoteScreen(onBackClick: () -> Unit, viewModel: NoteViewModel = hiltViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun CustomBottomSheet(onDeleteAction: () -> Unit, onDismiss: () -> Unit) {
+fun CustomBottomSheet(action: (CustomBottomSheetAction) -> Unit) {
     ModalBottomSheet(
         modifier = Modifier,
         sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = false),
         onDismissRequest = {
-            onDismiss()
+            action(CustomBottomSheetAction.Dismiss)
         },
         shape = RoundedCornerShape(
             topStart = 10.dp,
             topEnd = 10.dp
         ),
     ) {
-        CustomBottomSheetContainer(onDeleteAction)
+        CustomBottomSheetContainer(action)
     }
 }
 
 @Composable
-fun CustomBottomSheetContainer(onDeleteAction: () -> Unit) {
+fun CustomBottomSheetContainer(action: (CustomBottomSheetAction) -> Unit) {
     Scaffold(topBar = {
         Column {
             Text(
@@ -171,18 +274,12 @@ fun CustomBottomSheetContainer(onDeleteAction: () -> Unit) {
         }
     }) {
         Column(modifier = Modifier.padding(it)) {
-            Box(modifier = Modifier
-                .fillMaxWidth()
-                .height(64.dp)
-                .clickable {
-                    onDeleteAction()
-                }, contentAlignment = Alignment.CenterStart) {
-                Text(
-                    text = "Delete",
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(16.dp)
-                )
+            CustomBottomSheetItem(stringResource(id = R.string.delete)) {
+                action(CustomBottomSheetAction.Delete)
+            }
+
+            CustomBottomSheetItem(stringResource(id = R.string.set_alarm)) {
+                action(CustomBottomSheetAction.SetAlarm)
             }
         }
     }

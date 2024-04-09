@@ -17,7 +17,7 @@ class NoteRepositoryImpl(private val noteService: NoteService,
     override fun allNotes(): Flow<List<Note>> {
         return noteDao.getAll().map { noteDtoList ->
             noteDtoList.map { noteDto ->
-                Note(noteDto.title, noteDto.content, noteDto.modificationDate, noteDto.id)
+                Note(noteDto.title, noteDto.content, noteDto.modificationDate, noteDto.alarmDate, noteDto.id)
             }
         }
     }

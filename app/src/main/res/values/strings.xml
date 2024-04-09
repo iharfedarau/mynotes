@@ -7,4 +7,6 @@
     <string name="notes">Notes</string>
     <string name="reminders">Reminders</string>
     <string name="version">Version</string>
+    <string name="delete">Delete</string>
+    <string name="set_alarm">Set alarm</string>
 </resources>
