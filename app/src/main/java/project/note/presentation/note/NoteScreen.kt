@@ -1,8 +1,9 @@
 package project.note.presentation.note
 
-import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -41,6 +42,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -57,6 +59,7 @@ import project.note.presentation.utils.toLocalDate
 import project.note.presentation.utils.toLong
 import java.time.LocalDateTime
 import java.time.LocalTime
+import java.time.ZoneId
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -72,7 +75,7 @@ fun NoteScreen(onBackClick: () -> Unit, viewModel: NoteViewModel = hiltViewModel
     var timePickerState: TimePickerState? = null
 
     if (viewModel.note != null) {
-        val ldt = viewModel.alarmItem?.date
+        val ldt = viewModel.alarmItem?.date ?: LocalDateTime.now(ZoneId.systemDefault())
         datePickerState = rememberDatePickerState(initialSelectedDateMillis = ldt?.toLong())
         timePickerState = rememberTimePickerState(initialHour = ldt?.hour?: 0, initialMinute = ldt?.minute ?: 0)
     }
@@ -136,21 +139,23 @@ fun NoteScreen(onBackClick: () -> Unit, viewModel: NoteViewModel = hiltViewModel
                 val title = viewModel.title
                 
                 if (viewModel.alarmItem != null) {
+                    Spacer(modifier = Modifier.height(1.dp).background(Color.Black).fillMaxWidth())
+
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
                             .height(48.dp),
-                        Arrangement.SpaceBetween
                     ) {
                         IconButton(onClick = {
-
+                            showDatePicker = true
                         }) {
                             Icon(
                                 imageVector = Icons.Filled.DateRange,
                                 contentDescription = null,
                             )
                         }
-                        Text(text = viewModel.alarmItem?.date?.toLong()?.toFormattedDateTime() ?: "")
+                        Text(text = viewModel.alarmItem?.date?.toLong()?.toFormattedDateTime() ?: "",
+                            modifier = Modifier.weight(1.0f).align(Alignment.CenterVertically))
 
                         IconButton(onClick = {
                             viewModel.updateAlarm(null)

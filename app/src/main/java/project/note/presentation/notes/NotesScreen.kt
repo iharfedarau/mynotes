@@ -1,7 +1,7 @@
 package project.note.presentation.notes
 
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material3.DrawerValue
@@ -120,13 +121,21 @@ fun NotesScreen(onItemClick: (note: Note) -> Unit,
                                 swipeThreshold = 200.dp,
                                 endActions = listOf(delete)
                             ) {
-                                Box(modifier = Modifier.fillMaxWidth().height(64.dp).clickable{
+                                Row(modifier = Modifier.fillMaxWidth().height(64.dp).clickable{
                                     onItemClick(item)
-                                }, contentAlignment = Alignment.CenterStart) {
+                                }) {
                                     Text(text = item.title,
                                         modifier = Modifier
-                                            .fillMaxWidth()
+                                            .weight(1.0f)
                                             .padding(16.dp))
+
+                                    if (item.alarmDate != null) {
+                                        Icon(
+                                            imageVector = Icons.Filled.DateRange,
+                                            contentDescription = null,
+                                            modifier = Modifier.align(Alignment.CenterVertically).padding(16.dp),
+                                        )
+                                    }
                                 }
                             }
 
