@@ -19,6 +19,7 @@ import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.Button
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDialog
+import androidx.compose.material3.DatePickerState
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -28,6 +29,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TimePicker
+import androidx.compose.material3.TimePickerState
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.material3.rememberModalBottomSheetState
@@ -63,13 +65,17 @@ fun NoteScreen(onBackClick: () -> Unit, viewModel: NoteViewModel = hiltViewModel
     val coroutineScope = rememberCoroutineScope()
     var showBottomSheet by rememberSaveable {  mutableStateOf(false) }
 
-    val ldt = viewModel.alarmItem?.date
-
-    val timePickerState = rememberTimePickerState(initialHour = ldt?.hour?: 0, initialMinute = ldt?.minute ?: 0)
     var showTimePicker by remember { mutableStateOf(false) }
-
-    val datePickerState = rememberDatePickerState(initialSelectedDateMillis = ldt?.toLong())
     var showDatePicker by remember { mutableStateOf(false) }
+
+    var datePickerState: DatePickerState? = null
+    var timePickerState: TimePickerState? = null
+
+    if (viewModel.note != null) {
+        val ldt = viewModel.alarmItem?.date
+        datePickerState = rememberDatePickerState(initialSelectedDateMillis = ldt?.toLong())
+        timePickerState = rememberTimePickerState(initialHour = ldt?.hour?: 0, initialMinute = ldt?.minute ?: 0)
+    }
 
     Scaffold(
         topBar = {
@@ -111,8 +117,7 @@ fun NoteScreen(onBackClick: () -> Unit, viewModel: NoteViewModel = hiltViewModel
                         coroutineScope.launch {
                             showBottomSheet = true
                         }
-
-                    }) {
+                    }, enabled = viewModel.note != null) {
                         Icon(
                             imageVector = Icons.Filled.MoreVert,
                             contentDescription = null,
@@ -224,14 +229,14 @@ fun NoteScreen(onBackClick: () -> Unit, viewModel: NoteViewModel = hiltViewModel
                     }
                 )
                 {
-                    DatePicker(state = datePickerState)
+                    DatePicker(state = datePickerState!!)
                 }
             }
 
             if (showTimePicker) {
                 TimePickerDialog(
                     content = {
-                        TimePicker(state = timePickerState)
+                        TimePicker(state = timePickerState!!)
                     },
                     onCancel = {
                         showTimePicker = false
@@ -239,9 +244,11 @@ fun NoteScreen(onBackClick: () -> Unit, viewModel: NoteViewModel = hiltViewModel
                     onConfirm = {
                         showTimePicker = false
 
-                        datePickerState.selectedDateMillis?.let {
-                            val date = LocalDateTime.of(it.toLocalDate(), LocalTime.of(timePickerState.hour, timePickerState.minute))
-                            viewModel.updateAlarm(AlarmItem(date, viewModel.title))
+                        datePickerState?.selectedDateMillis?.let {date ->
+                            timePickerState?.let { time ->
+                                val ldt = LocalDateTime.of(date.toLocalDate(), LocalTime.of(time.hour, time.minute))
+                                viewModel.updateAlarm(AlarmItem(ldt, viewModel.title))
+                            }
                         }
                     })
             }

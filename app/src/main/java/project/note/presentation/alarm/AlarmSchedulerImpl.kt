@@ -6,7 +6,6 @@ import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
 import java.time.ZoneId
-import java.time.ZoneOffset
 
 class AlarmSchedulerImpl(private val context: Context) : AlarmScheduler{
     private val alarmManager = context.getSystemService(AlarmManager::class.java)
