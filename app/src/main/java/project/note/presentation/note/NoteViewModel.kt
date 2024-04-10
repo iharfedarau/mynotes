@@ -17,6 +17,7 @@ import project.note.presentation.alarm.AlarmScheduler
 
 import project.note.presentation.utils.UndoRedoStack
 import project.note.presentation.utils.toLocalDateTime
+import project.note.presentation.utils.toLong
 import java.util.Calendar
 import javax.inject.Inject
 
@@ -27,8 +28,10 @@ class NoteViewModel @Inject constructor(
     private val repository: NoteRepository,
     private val alarmScheduler: AlarmScheduler
 ) : ViewModel() {
-    var alarmDate by mutableStateOf<Long?>(null)
+    var alarmItem by mutableStateOf<AlarmItem?>(null)
         private set
+
+    private var alarmItemRef by mutableStateOf<AlarmItem?>(null)
 
     var note by mutableStateOf<Note?>(null)
         private set
@@ -46,7 +49,14 @@ class NoteViewModel @Inject constructor(
         if (noteId > -1) {
             viewModelScope.launch {
                 repository.getById(noteId)?.let { note ->
-                    alarmDate = note.alarmDate
+                    note.alarmDate?.let { alarmDate ->
+                        alarmItem = AlarmItem(
+                            date = alarmDate.toLocalDateTime(),
+                            message = note.alarmMessage
+                        )
+                        alarmItemRef = alarmItem
+                    }
+
                     title = note.title
                     content = TextFieldValue(note.content, TextRange(note.content.length))
                     this@NoteViewModel.note = note
@@ -60,14 +70,8 @@ class NoteViewModel @Inject constructor(
         }
     }
 
-    fun updateAlarmDate(alarmDate: Long?) {
-        if (alarmDate == null) {
-            this.alarmDate?.let {
-                alarmScheduler.cancel(AlarmItem(it.toLocalDateTime(), "!!!!!!!!!!"))
-            }
-        }
-
-        this.alarmDate = alarmDate
+    fun updateAlarm(alarmItem: AlarmItem?) {
+        this.alarmItem = alarmItem
     }
 
     fun updateTitle(title: String) {
@@ -90,17 +94,24 @@ class NoteViewModel @Inject constructor(
         viewModelScope.launch {
             repository.insert(
                 Note(
-                    title =  title,
+                    title = title,
                     content = content.text,
-                    modificationDate =  Calendar.getInstance().timeInMillis,
-                    alarmDate= alarmDate,
+                    modificationDate = Calendar.getInstance().timeInMillis,
+                    alarmDate = alarmItem?.date?.toLong(),
+                    alarmMessage = alarmItem?.message,
                     id = note?.id
                 )
             )
-        }
 
-        alarmDate?.let {
-            alarmScheduler.schedule(AlarmItem(it.toLocalDateTime(), "!!!!!!!!!!"))
+            if (alarmItem != alarmItemRef) {
+                alarmItem?.let {
+                    alarmScheduler.schedule(it)
+                }
+
+                alarmItemRef?.let {
+                    alarmScheduler.cancel(it)
+                }
+            }
         }
     }
 

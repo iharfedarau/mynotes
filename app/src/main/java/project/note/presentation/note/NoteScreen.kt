@@ -49,9 +49,9 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import kotlinx.coroutines.launch
 import project.note.R
+import project.note.presentation.alarm.AlarmItem
 import project.note.presentation.utils.toFormattedDateTime
 import project.note.presentation.utils.toLocalDate
-import project.note.presentation.utils.toLocalDateTime
 import project.note.presentation.utils.toLong
 import java.time.LocalDateTime
 import java.time.LocalTime
@@ -63,12 +63,12 @@ fun NoteScreen(onBackClick: () -> Unit, viewModel: NoteViewModel = hiltViewModel
     val coroutineScope = rememberCoroutineScope()
     var showBottomSheet by rememberSaveable {  mutableStateOf(false) }
 
-    val ldt = viewModel.alarmDate?.toLocalDateTime()
+    val ldt = viewModel.alarmItem?.date
 
     val timePickerState = rememberTimePickerState(initialHour = ldt?.hour?: 0, initialMinute = ldt?.minute ?: 0)
     var showTimePicker by remember { mutableStateOf(false) }
 
-    val datePickerState = rememberDatePickerState(initialSelectedDateMillis = viewModel.alarmDate)
+    val datePickerState = rememberDatePickerState(initialSelectedDateMillis = ldt?.toLong())
     var showDatePicker by remember { mutableStateOf(false) }
 
     Scaffold(
@@ -130,7 +130,7 @@ fun NoteScreen(onBackClick: () -> Unit, viewModel: NoteViewModel = hiltViewModel
 
                 val title = viewModel.title
                 
-                if (viewModel.alarmDate != null) {
+                if (viewModel.alarmItem != null) {
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -145,10 +145,10 @@ fun NoteScreen(onBackClick: () -> Unit, viewModel: NoteViewModel = hiltViewModel
                                 contentDescription = null,
                             )
                         }
-                        Text(text = viewModel.alarmDate?.toFormattedDateTime() ?: "")
+                        Text(text = viewModel.alarmItem?.date?.toLong()?.toFormattedDateTime() ?: "")
 
                         IconButton(onClick = {
-                            viewModel.updateAlarmDate(null)
+                            viewModel.updateAlarm(null)
                         }) {
                             Icon(
                                 imageVector = Icons.Filled.Delete,
@@ -240,7 +240,8 @@ fun NoteScreen(onBackClick: () -> Unit, viewModel: NoteViewModel = hiltViewModel
                         showTimePicker = false
 
                         datePickerState.selectedDateMillis?.let {
-                            viewModel.updateAlarmDate(LocalDateTime.of(it.toLocalDate(), LocalTime.of(timePickerState.hour, timePickerState.minute)).toLong())
+                            val date = LocalDateTime.of(it.toLocalDate(), LocalTime.of(timePickerState.hour, timePickerState.minute))
+                            viewModel.updateAlarm(AlarmItem(date, viewModel.title))
                         }
                     })
             }
