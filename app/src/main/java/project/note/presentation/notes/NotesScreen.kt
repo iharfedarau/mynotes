@@ -101,9 +101,7 @@ fun NotesScreen(onItemClick: (note: Note) -> Unit,
                         itemContent = { _, item ->
                             val delete = SwipeAction(
                                 onSwipe = {
-                                    item.id?.let {
-                                        viewModel.delete(it)
-                                    }
+                                    viewModel.delete(item)
                                 },
                                 icon = {
                                     Icon(

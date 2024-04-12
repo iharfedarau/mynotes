@@ -54,6 +54,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import kotlinx.coroutines.launch
 import project.note.R
 import project.note.presentation.alarm.AlarmItem
+import project.note.presentation.ui.NoteAppTheme
 import project.note.presentation.utils.toFormattedDateTime
 import project.note.presentation.utils.toLocalDate
 import project.note.presentation.utils.toLong
@@ -139,12 +140,16 @@ fun NoteScreen(onBackClick: () -> Unit, viewModel: NoteViewModel = hiltViewModel
                 val title = viewModel.title
                 
                 if (viewModel.alarmItem != null) {
-                    Spacer(modifier = Modifier.height(1.dp).background(Color.Black).fillMaxWidth())
+                    Spacer(modifier = Modifier
+                        .height(1.dp)
+                        .background(Color.Black)
+                        .fillMaxWidth())
 
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .height(48.dp),
+                            .height(48.dp)
+                            .background(color = NoteAppTheme.colors.surfaceVariant),
                     ) {
                         IconButton(onClick = {
                             showDatePicker = true
@@ -155,7 +160,10 @@ fun NoteScreen(onBackClick: () -> Unit, viewModel: NoteViewModel = hiltViewModel
                             )
                         }
                         Text(text = viewModel.alarmItem?.date?.toLong()?.toFormattedDateTime() ?: "",
-                            modifier = Modifier.weight(1.0f).align(Alignment.CenterVertically))
+
+                            modifier = Modifier
+                                .weight(1.0f)
+                                .align(Alignment.CenterVertically))
 
                         IconButton(onClick = {
                             viewModel.updateAlarm(null)
@@ -284,8 +292,8 @@ fun CustomBottomSheetContainer(action: (CustomBottomSheetAction) -> Unit) {
     Scaffold(topBar = {
         Column {
             Text(
-                text = "Note actions", modifier = Modifier
-                    .height(48.dp), fontSize = 23.sp
+                text = stringResource(id = R.string.note_actions), modifier = Modifier
+                    .padding(16.dp), fontSize = 23.sp
             )
             HorizontalDivider(thickness = 1.dp, color = Color.DarkGray)
         }

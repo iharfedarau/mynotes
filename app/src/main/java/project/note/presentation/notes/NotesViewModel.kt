@@ -6,11 +6,15 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
 import project.note.domain.Note
 import project.note.domain.repository.NoteRepository
+import project.note.presentation.alarm.AlarmItem
+import project.note.presentation.alarm.AlarmScheduler
+import project.note.presentation.utils.toLocalDateTime
 import javax.inject.Inject
 
 @HiltViewModel
 class NotesViewModel @Inject constructor(
-    private val repository: NoteRepository
+    private val repository: NoteRepository,
+    private val alarmScheduler: AlarmScheduler
 ) : ViewModel() {
     val allNotes = repository.allNotes()
 
@@ -18,8 +22,14 @@ class NotesViewModel @Inject constructor(
         callback(repository.insert(note))
     }
 
-    fun delete(id: Long) = viewModelScope.launch {
-        repository.delete(id)
+    fun delete(note: Note) = viewModelScope.launch {
+        note.id?.let {
+            repository.delete(it)
+        }
+
+        note.alarmDate?.let {
+            alarmScheduler.cancel(AlarmItem(it.toLocalDateTime(), note.alarmMessage))
+        }
     }
 
     private fun refreshData() {
