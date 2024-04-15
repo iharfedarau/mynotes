@@ -36,6 +36,7 @@ import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.material3.rememberTimePickerState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -188,10 +189,15 @@ fun NoteScreen(onBackClick: () -> Unit, viewModel: NoteViewModel = hiltViewModel
                         }
                     })
 
+                val scrollState = rememberScrollState()
+                LaunchedEffect(scrollState.maxValue) {
+                    scrollState.scrollTo(scrollState.maxValue)
+                }
+
                 TextField(viewModel.content, modifier = Modifier
                     .fillMaxWidth()
                     .fillMaxHeight(1.0f)
-                    .verticalScroll(rememberScrollState()), onValueChange = {
+                    .verticalScroll(scrollState), onValueChange = {
                     viewModel.updateContent(it)
                 })
             }
