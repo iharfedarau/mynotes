@@ -3,7 +3,7 @@ package project.note.data
 import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
-import project.note.domain.Note
+import project.note.domain.repository.Note
 import java.io.Serializable
 
 @Entity(tableName="note_table")

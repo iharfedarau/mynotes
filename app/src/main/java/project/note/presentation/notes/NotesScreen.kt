@@ -34,7 +34,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import project.note.domain.Note
+import project.note.domain.repository.Note
 import androidx.hilt.navigation.compose.hiltViewModel
 import kotlinx.coroutines.launch
 import me.saket.swipe.SwipeAction
@@ -45,7 +45,7 @@ import java.util.Calendar
 
 @Composable
 fun NotesScreen(onItemClick: (note: Note) -> Unit,
-              viewModel: NotesViewModel = hiltViewModel()) {
+                viewModel: NotesViewModel = hiltViewModel()) {
 
     val scope = rememberCoroutineScope()
     val drawerState = rememberDrawerState(DrawerValue.Closed)

@@ -7,7 +7,7 @@ import project.note.data.db.NoteDao
 import project.note.data.network.NoteService
 import project.note.data.toNote
 import project.note.data.toNoteDto
-import project.note.domain.Note
+import project.note.domain.repository.Note
 import project.note.domain.repository.NoteRepository
 
 class NoteRepositoryImpl(private val noteService: NoteService,

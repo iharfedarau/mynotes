@@ -1,4 +1,4 @@
-package project.note.presentation.alarm
+package project.note.data.alarm
 
 import android.app.NotificationManager
 import android.content.BroadcastReceiver
@@ -15,7 +15,7 @@ class AlarmReceiver : BroadcastReceiver() {
             val notificationManager =
                 ctx.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
             val builder = NotificationCompat.Builder(ctx, channelId)
-                .setSmallIcon(R.drawable.note)
+                .setSmallIcon(R.mipmap.ic_launcher)
                 .setContentTitle("Note Alarm")
                 .setContentText(message)
                 .setPriority(NotificationCompat.PRIORITY_HIGH)

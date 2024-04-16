@@ -1,4 +1,4 @@
-package project.note.presentation.alarm
+package project.note.domain.alarm
 
 interface AlarmScheduler {
     fun schedule(alarmItem: AlarmItem)

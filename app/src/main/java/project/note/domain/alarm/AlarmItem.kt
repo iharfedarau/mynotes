@@ -1,4 +1,4 @@
-package project.note.presentation.alarm
+package project.note.domain.alarm
 
 import java.time.LocalDateTime
 

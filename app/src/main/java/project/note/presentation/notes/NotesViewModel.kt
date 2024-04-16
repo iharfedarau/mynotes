@@ -4,10 +4,10 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
-import project.note.domain.Note
+import project.note.domain.repository.Note
 import project.note.domain.repository.NoteRepository
-import project.note.presentation.alarm.AlarmItem
-import project.note.presentation.alarm.AlarmScheduler
+import project.note.domain.alarm.AlarmItem
+import project.note.domain.alarm.AlarmScheduler
 import project.note.presentation.utils.toLocalDateTime
 import javax.inject.Inject
 

@@ -54,7 +54,7 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import kotlinx.coroutines.launch
 import project.note.R
-import project.note.presentation.alarm.AlarmItem
+import project.note.domain.alarm.AlarmItem
 import project.note.presentation.ui.NoteAppTheme
 import project.note.presentation.utils.toFormattedDateTime
 import project.note.presentation.utils.toLocalDate

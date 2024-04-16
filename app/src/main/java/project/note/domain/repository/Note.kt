@@ -1,12 +1,8 @@
-package project.note.domain
+package project.note.domain.repository
 
-import android.os.Parcelable
-import kotlinx.parcelize.Parcelize
-
-@Parcelize
 data class Note(val title: String,
                 val content: String,
                 val modificationDate: Long,
                 val alarmDate: Long? = null,
                 val alarmMessage: String? = null,
-                val id: Long? = null): Parcelable
+                val id: Long? = null)

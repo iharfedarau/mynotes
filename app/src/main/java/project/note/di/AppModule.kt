@@ -10,8 +10,8 @@ import project.note.data.db.NoteRoomDatabase
 import project.note.data.network.NoteService
 import project.note.data.repository.NoteRepositoryImpl
 import project.note.domain.repository.NoteRepository
-import project.note.presentation.alarm.AlarmScheduler
-import project.note.presentation.alarm.AlarmSchedulerImpl
+import project.note.domain.alarm.AlarmScheduler
+import project.note.data.alarm.AlarmSchedulerImpl
 import javax.inject.Singleton
 
 @Module
