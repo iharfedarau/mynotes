@@ -104,13 +104,8 @@ class NoteViewModel @Inject constructor(
             )
 
             if (alarmItem != alarmItemRef) {
-                alarmItem?.let {
-                    alarmScheduler.schedule(it)
-                }
-
-                alarmItemRef?.let {
-                    alarmScheduler.cancel(it)
-                }
+                alarmItem?.let(alarmScheduler::schedule)
+                alarmItemRef?.let(alarmScheduler::cancel)
             }
         }
     }

@@ -1,6 +1,5 @@
 package project.note.data.alarm
 
-import android.annotation.SuppressLint
 import android.app.AlarmManager
 import android.app.PendingIntent
 import android.content.Context
@@ -12,10 +11,9 @@ import java.time.ZoneId
 class AlarmSchedulerImpl(private val context: Context) : AlarmScheduler {
     private val alarmManager = context.getSystemService(AlarmManager::class.java)
 
-    @SuppressLint("ScheduleExactAlarm")
     override fun schedule(alarmItem: AlarmItem) {
         val intent = Intent(context, AlarmReceiver::class.java).apply {
-            putExtra("EXTRA_MESSAGE", alarmItem.message)
+            putExtra(AlarmReceiver.MESSAGE_KEY, alarmItem.message)
         }
 
         alarmManager.setExactAndAllowWhileIdle(

@@ -13,23 +13,35 @@ import project.note.presentation.MainActivity
 
 class AlarmReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context?, intent: Intent?) {
-        val message = intent?.getStringExtra("EXTRA_MESSAGE") ?: return
-        context?.let { ctx ->
-            val pendingIntent = TaskStackBuilder.create(ctx).run {
-                addNextIntentWithParentStack(Intent(ctx, MainActivity::class.java))
-                getPendingIntent(0, PendingIntent.FLAG_UPDATE_CURRENT)
+        intent?.let { int ->
+            val message = int.getStringExtra(MESSAGE_KEY) ?: return
+
+            context?.let { ctx ->
+                createNotification(message, ctx)
             }
-
-            val notificationManager = ctx.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-            val builder = NotificationCompat.Builder(ctx, NoteApplication.NOTE_CHANNEL_ID)
-                .setSmallIcon(R.mipmap.ic_launcher)
-                .setContentTitle("Note Alarm")
-                .setContentText(message)
-                .setPriority(NotificationCompat.PRIORITY_HIGH)
-                .setContentIntent(pendingIntent)
-            val notification = builder.build()
-
-            notificationManager.notify(1, notification)
         }
+    }
+
+    private fun createNotification(message: String, context: Context) {
+        val pendingIntent = TaskStackBuilder.create(context).run {
+            addNextIntentWithParentStack(Intent(context, MainActivity::class.java))
+            getPendingIntent(0, PendingIntent.FLAG_UPDATE_CURRENT)
+        }
+
+        val notificationManager =
+            context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+        val builder = NotificationCompat.Builder(context, NoteApplication.NOTE_CHANNEL_ID)
+            .setSmallIcon(R.mipmap.ic_launcher)
+            .setContentTitle("Note Alarm")
+            .setContentText(message)
+            .setPriority(NotificationCompat.PRIORITY_HIGH)
+            .setContentIntent(pendingIntent)
+        val notification = builder.build()
+
+        notificationManager.notify(1, notification)
+    }
+
+    companion object {
+        const val MESSAGE_KEY = "EXTRA_MESSAGE"
     }
 }
