@@ -55,14 +55,13 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import kotlinx.coroutines.launch
 import project.note.R
 import project.note.domain.alarm.AlarmItem
+import project.note.domain.utils.currentSystemTime
 import project.note.domain.utils.toLong
 import project.note.presentation.ui.NoteAppTheme
 import project.note.presentation.utils.toFormattedDateTime
 import project.note.presentation.utils.toLocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
-import java.time.ZoneId
-
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -77,9 +76,9 @@ fun NoteScreen(onBackClick: () -> Unit, viewModel: NoteViewModel = hiltViewModel
     var timePickerState: TimePickerState? = null
 
     if (viewModel.note != null) {
-        val ldt = viewModel.alarmItem?.date ?: LocalDateTime.now(ZoneId.systemDefault())
-        datePickerState = rememberDatePickerState(initialSelectedDateMillis = ldt?.toLong())
-        timePickerState = rememberTimePickerState(initialHour = ldt?.hour?: 0, initialMinute = ldt?.minute ?: 0)
+        val ldt = viewModel.alarmItem?.date ?: currentSystemTime()
+        datePickerState = rememberDatePickerState(initialSelectedDateMillis = ldt.toLong())
+        timePickerState = rememberTimePickerState(initialHour = ldt.hour, initialMinute = ldt.minute)
     }
 
     Scaffold(

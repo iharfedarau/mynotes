@@ -7,21 +7,22 @@ import android.content.Intent
 import android.util.Log
 import project.note.domain.alarm.AlarmScheduler
 import project.note.domain.alarm.AlarmItem
-import project.note.domain.utils.toLong
-import java.time.ZoneId
+import project.note.domain.utils.currentUTCTime
+import project.note.domain.utils.toSystemZone
+import java.time.LocalDateTime
 
 class AlarmSchedulerImpl(private val context: Context) : AlarmScheduler {
     private val alarmManager = context.getSystemService(AlarmManager::class.java)
 
     override fun schedule(alarmItem: AlarmItem) {
-        if (System.currentTimeMillis() < alarmItem.date.toLong()) {
+        if (currentUTCTime() < alarmItem.date) {
             val intent = Intent(context, AlarmReceiver::class.java).apply {
                 putExtra(AlarmReceiver.MESSAGE_KEY, alarmItem.message)
             }
 
             alarmManager.setExactAndAllowWhileIdle(
                 AlarmManager.RTC_WAKEUP,
-                alarmItem.date.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli(),
+                alarmItem.date.toSystemZone(),
                 PendingIntent.getBroadcast(
                     context,
                     alarmItem.hashCode(),
