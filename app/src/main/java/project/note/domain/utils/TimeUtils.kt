@@ -9,7 +9,7 @@ fun LocalDateTime.toLong(): Long {
     return toInstant(ZoneOffset.UTC).toEpochMilli()
 }
 
-fun LocalDateTime.toSystemZone(): Long {
+fun LocalDateTime.systemZoneMs(): Long {
     return atZone(ZoneId.systemDefault()).toInstant().toEpochMilli()
 }
 

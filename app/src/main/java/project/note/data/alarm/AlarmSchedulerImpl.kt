@@ -8,8 +8,7 @@ import android.util.Log
 import project.note.domain.alarm.AlarmScheduler
 import project.note.domain.alarm.AlarmItem
 import project.note.domain.utils.currentUTCTime
-import project.note.domain.utils.toSystemZone
-import java.time.LocalDateTime
+import project.note.domain.utils.systemZoneMs
 
 class AlarmSchedulerImpl(private val context: Context) : AlarmScheduler {
     private val alarmManager = context.getSystemService(AlarmManager::class.java)
@@ -22,12 +21,12 @@ class AlarmSchedulerImpl(private val context: Context) : AlarmScheduler {
 
             alarmManager.setExactAndAllowWhileIdle(
                 AlarmManager.RTC_WAKEUP,
-                alarmItem.date.toSystemZone(),
+                alarmItem.date.systemZoneMs(),
                 PendingIntent.getBroadcast(
                     context,
                     alarmItem.hashCode(),
                     intent,
-                    PendingIntent.FLAG_IMMUTABLE
+                    PendingIntent.FLAG_UPDATE_CURRENT
                 )
             )
         } else {
@@ -41,7 +40,7 @@ class AlarmSchedulerImpl(private val context: Context) : AlarmScheduler {
                 context,
                 alarmItem.hashCode(),
                 Intent(context, AlarmReceiver::class.java),
-                PendingIntent.FLAG_IMMUTABLE
+                PendingIntent.FLAG_UPDATE_CURRENT
             )
         )
     }
