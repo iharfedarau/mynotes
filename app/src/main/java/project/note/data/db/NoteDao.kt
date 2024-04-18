@@ -12,6 +12,9 @@ interface NoteDao {
     @Query("SELECT * FROM note_table ORDER BY modification_date DESC")
     fun getAll(): Flow<List<NoteDto>>
 
+    @Query("SELECT * FROM note_table WHERE alarm_date IS NOT NULL ORDER BY modification_date DESC")
+    suspend fun getAlarms(): List<NoteDto>
+
     @Query("SELECT * FROM note_table WHERE id=:id")
     suspend fun getById(id: Long): NoteDto?
 

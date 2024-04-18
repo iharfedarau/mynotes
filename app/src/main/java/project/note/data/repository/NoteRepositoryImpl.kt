@@ -7,8 +7,10 @@ import project.note.data.db.NoteDao
 import project.note.data.network.NoteService
 import project.note.data.toNote
 import project.note.data.toNoteDto
+import project.note.domain.alarm.AlarmItem
 import project.note.domain.repository.Note
 import project.note.domain.repository.NoteRepository
+import project.note.domain.utils.toLocalDateTime
 
 class NoteRepositoryImpl(private val noteService: NoteService,
                      private val noteDao: NoteDao
@@ -20,6 +22,16 @@ class NoteRepositoryImpl(private val noteService: NoteService,
                 Note(noteDto.title, noteDto.content, noteDto.modificationDate, noteDto.alarmDate, noteDto.alarmMessage, noteDto.id)
             }
         }
+    }
+
+    override suspend fun getAllAlarms(): List<AlarmItem> {
+        val result = mutableListOf<AlarmItem>()
+        noteDao.getAlarms().forEach {
+            if (it.alarmDate != null) {
+                result.add(AlarmItem(it.alarmDate.toLocalDateTime(), it.alarmMessage))
+            }
+        }
+        return result
     }
 
     override suspend fun getById(id: Long): Note? {
