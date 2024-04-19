@@ -1,19 +1,11 @@
 package project.note.presentation.notes
 
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.DateRange
-import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material3.DrawerValue
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.ModalDrawerSheet
 import androidx.compose.material3.ModalNavigationDrawer
@@ -29,23 +21,23 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.ui.Alignment
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import project.note.domain.repository.Note
 import androidx.hilt.navigation.compose.hiltViewModel
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import me.saket.swipe.SwipeAction
-import me.saket.swipe.SwipeableActionsBox
 import project.note.BuildConfig
 import project.note.R
 import java.util.Calendar
 
 @Composable
-fun NotesScreen(onItemClick: (note: Note) -> Unit,
-                viewModel: NotesViewModel = hiltViewModel()) {
+fun NotesScreen(
+    onItemClick: (note: Note) -> Unit,
+    viewModel: NotesViewModel = hiltViewModel()
+) {
 
     val scope = rememberCoroutineScope()
     val drawerState = rememberDrawerState(DrawerValue.Closed)
@@ -92,54 +84,27 @@ fun NotesScreen(onItemClick: (note: Note) -> Unit,
                 }
             ) { paddings ->
                 val notes by viewModel.allNotes.collectAsState(initial = emptyList())
-                LazyColumn(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(paddings)
-                ) {
-                    itemsIndexed(items = notes,
-                        itemContent = { _, item ->
-                            val delete = SwipeAction(
-                                onSwipe = {
-                                    viewModel.delete(item)
-                                },
-                                icon = {
-                                    Icon(
-                                        Icons.Default.Delete,
-                                        contentDescription = null,
-                                        modifier = Modifier.padding(16.dp),
-                                        tint = Color.White
-                                    )
-                                }, background = Color.Red.copy(alpha = 0.5f),
-                                isUndo = true
-                            )
+                var isRefreshing by remember { mutableStateOf(false) }
 
-                            SwipeableActionsBox(
-                                modifier = Modifier,
-                                swipeThreshold = 200.dp,
-                                endActions = listOf(delete)
-                            ) {
-                                Row(modifier = Modifier.fillMaxWidth().height(64.dp).clickable{
-                                    onItemClick(item)
-                                }) {
-                                    Text(text = item.title,
-                                        modifier = Modifier
-                                            .weight(1.0f)
-                                            .padding(16.dp))
+                PullToRefreshLazyColumn(
+                    items = notes,
+                    content = { note ->
+                        NoteItem(note = note,
+                            onClick = onItemClick,
+                            onDelete = {
+                                viewModel.delete(it)
+                            })
+                    },
+                    modifier = Modifier.padding(paddings),
+                    isRefreshing = isRefreshing,
+                    onRefresh = {
+                        scope.launch {
+                            isRefreshing = true
+                            delay(1000L) // Simulated API call
+                            isRefreshing = false
+                        }
+                    })
 
-                                    if (item.alarmDate != null) {
-                                        Icon(
-                                            imageVector = Icons.Filled.DateRange,
-                                            contentDescription = null,
-                                            modifier = Modifier.align(Alignment.CenterVertically).padding(16.dp),
-                                        )
-                                    }
-                                }
-                            }
-
-                            HorizontalDivider(thickness = 1.dp, color = Color.Black)
-                        })
-                }
             }
         }
     )
