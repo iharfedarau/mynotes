@@ -5,7 +5,6 @@ import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.content.Context
 import android.graphics.Color
-import android.os.Build
 import dagger.hilt.android.HiltAndroidApp
 
 @HiltAndroidApp
@@ -13,10 +12,7 @@ class NoteApplication : Application() {
     override fun onCreate() {
         super.onCreate()
 
-        // If application is running on Oreo or later
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            createAlarmChannel()
-        }
+        createAlarmChannel()
     }
 
     private fun createAlarmChannel() {
