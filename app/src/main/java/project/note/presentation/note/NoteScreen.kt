@@ -14,6 +14,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.MoreVert
@@ -75,6 +76,14 @@ fun NoteScreen(onBackClick: () -> Unit, viewModel: NoteViewModel = hiltViewModel
     var datePickerState: DatePickerState? = null
     var timePickerState: TimePickerState? = null
 
+    var saveButtonEnabled by rememberSaveable {
+        mutableStateOf(false)
+    }
+
+    viewModel.undoRedo.addListener {
+        saveButtonEnabled = true
+    }
+
     if (viewModel.note != null) {
         val ldt = viewModel.alarmItem?.date ?: currentSystemTime()
         datePickerState = rememberDatePickerState(initialSelectedDateMillis = ldt.toLong())
@@ -113,6 +122,16 @@ fun NoteScreen(onBackClick: () -> Unit, viewModel: NoteViewModel = hiltViewModel
                     }, enabled = viewModel.undoRedo.canRedo) {
                         Icon(
                             imageVector = ImageVector.vectorResource(id = R.drawable.redo),
+                            contentDescription = null,
+                        )
+                    }
+
+                    IconButton(onClick = {
+                        saveButtonEnabled = false
+                        viewModel.save()
+                    }, enabled = saveButtonEnabled) {
+                        Icon(
+                            imageVector =  Icons.Filled.Check,
                             contentDescription = null,
                         )
                     }
@@ -184,6 +203,7 @@ fun NoteScreen(onBackClick: () -> Unit, viewModel: NoteViewModel = hiltViewModel
                         .height(64.dp),
                     onValueChange = {
                         if (it.length <= 30) {
+                            saveButtonEnabled = true
                             viewModel.updateTitle(it)
                         }
                     })

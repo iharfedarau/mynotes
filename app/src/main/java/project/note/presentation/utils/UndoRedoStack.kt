@@ -6,18 +6,18 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.TextFieldValue
 
+typealias UndoRedoStackActionListener = (TextFieldValue) -> Unit
+
 class UndoRedoStack {
     private var stack = mutableListOf<TextFieldValue>()
     private var stackPos = -1
+    private var actionListeners = mutableListOf<UndoRedoStackActionListener>()
 
     var canUndo by mutableStateOf(false)
         private set
 
     var canRedo by mutableStateOf(false)
         private set
-
-    private var actionListener: ((data: TextFieldValue) -> Unit)? =
-        null
 
     fun setInitialValue(initialValue: String) {
         if (stackPos == -1) {
@@ -26,8 +26,8 @@ class UndoRedoStack {
         }
     }
 
-    fun setListener(listener: (data: TextFieldValue) -> Unit) {
-        actionListener = listener
+    fun addListener(listener: UndoRedoStackActionListener) {
+        actionListeners.add(listener)
     }
 
     fun undo() {
@@ -67,7 +67,7 @@ class UndoRedoStack {
         canUndo = stackPos >= 1
         canRedo = stack.isNotEmpty() && stackPos < stack.size - 1
 
-        actionListener?.let {
+        actionListeners.forEach {
             it(value)
         }
     }

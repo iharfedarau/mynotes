@@ -62,7 +62,7 @@ class NoteViewModel @Inject constructor(
                     this@NoteViewModel.note = note
 
                     undoRedo.setInitialValue(note.content)
-                    undoRedo.setListener { data ->
+                    undoRedo.addListener { data ->
                         content = data
                     }
                 }
