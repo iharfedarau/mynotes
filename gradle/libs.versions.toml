@@ -1,0 +1,7 @@
+[versions]
+androidApplicationVersion = "8.3.2"
+
+[libraries]
+
+[plugins]
+android-application = {id = "com.android.application", version.ref = "androidApplicationVersion"}
