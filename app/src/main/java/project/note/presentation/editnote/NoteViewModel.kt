@@ -26,20 +26,20 @@ class NoteViewModel @Inject constructor(
     private val repository: NoteRepository,
     private val alarmScheduler: AlarmScheduler
 ) : ViewModel() {
-    private var noteId: Long
+    private lateinit var note: Note
 
     var state by mutableStateOf(EditNoteState())
         private set
 
-    private var alarmItemRef by mutableStateOf<AlarmItem?>(null)
-
     private val undoRedo = UndoRedoStack()
 
     init {
-        noteId = savedStateHandle.get<Long>("noteId")!!
+        val noteId = savedStateHandle.get<Long>("noteId")!!
         if (noteId > -1) {
             viewModelScope.launch {
-                repository.getById(noteId)?.let { note ->
+                repository.getById(noteId)?.let { localNote ->
+                    note = localNote
+
                     state = state.copy(editNoteItem = EditNoteItem(
                         note.title,
                         TextFieldValue(note.content),
@@ -65,22 +65,26 @@ class NoteViewModel @Inject constructor(
 
     private fun delete() {
         viewModelScope.launch {
-            repository.delete(noteId)
+            note.id?.let {
+                repository.delete(it)
+            }
         }
     }
 
     private fun save() {
         viewModelScope.launch {
-            repository.insert(
-                note = Note(
-                    title = state.editNoteItem.title,
-                    content = state.editNoteItem.content.text,
-                    modificationDate = Calendar.getInstance().timeInMillis,
-                    alarmDate = state.editNoteItem.alarmItem?.date?.toLong(),
-                    alarmMessage = state.editNoteItem.alarmItem?.message,
-                    id = noteId
-                )
-            )
+            val noteToSave = note.copy(
+                title = state.editNoteItem.title,
+                content = state.editNoteItem.content.text,
+                modificationDate = Calendar.getInstance().timeInMillis,
+                alarmDate = state.editNoteItem.alarmItem?.date?.toLong(),
+                alarmMessage = state.editNoteItem.alarmItem?.message)
+
+            repository.insert(noteToSave)
+
+            val alarmItemRef = noteToSave.alarmDate?.let { date ->
+                AlarmItem(date.toLocalDateTime(), noteToSave.alarmMessage)
+            }
 
             if (state.editNoteItem.alarmItem != alarmItemRef) {
                 state.editNoteItem.alarmItem?.let(alarmScheduler::schedule)
@@ -111,8 +115,11 @@ class NoteViewModel @Inject constructor(
             }
 
             is EditNoteAction.SetContentAction -> {
+                if (event.content.text != state.editNoteItem.content.text) {
+                    state = state.copy(canSave = true)
+                }
+
                 undoRedo.push(event.content)
-                state = state.copy(canSave = true)
             }
 
             is EditNoteAction.SetTitleAction -> {
