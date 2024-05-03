@@ -12,7 +12,7 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import dagger.hilt.android.AndroidEntryPoint
 import project.note.presentation.utils.Routes
-import project.note.presentation.note.NoteScreen
+import project.note.presentation.editnote.RootEditNoteScreen
 import project.note.presentation.notes.NotesScreen
 import project.note.presentation.ui.NoteAppTheme
 
@@ -52,9 +52,7 @@ class MainActivity : ComponentActivity() {
                             }
                         )
                         ) {
-                        NoteScreen(onBackClick = {
-                            navController.navigate(Routes.NOTES_VIEW)
-                        })
+                        RootEditNoteScreen(navController)
                     }
                 }
             }

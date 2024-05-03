@@ -1,4 +1,4 @@
-package project.note.presentation.note
+package project.note.presentation.editnote
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column

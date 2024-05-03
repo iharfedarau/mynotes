@@ -1,4 +1,4 @@
-package project.note.presentation.note
+package project.note.presentation.editnote
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
@@ -21,7 +21,6 @@ import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.Button
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDialog
-import androidx.compose.material3.DatePickerState
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -31,7 +30,6 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TimePicker
-import androidx.compose.material3.TimePickerState
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.material3.rememberModalBottomSheetState
@@ -53,50 +51,62 @@ import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.navigation.NavHostController
 import kotlinx.coroutines.launch
 import project.note.R
 import project.note.domain.alarm.AlarmItem
 import project.note.domain.utils.currentSystemTime
 import project.note.domain.utils.toLong
 import project.note.presentation.ui.NoteAppTheme
+import project.note.presentation.utils.Routes
 import project.note.presentation.utils.toFormattedDateTime
 import project.note.presentation.utils.toLocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
 
+@Composable
+fun RootEditNoteScreen(
+    navController: NavHostController,
+    viewModel: NoteViewModel = hiltViewModel()
+) {
+    EditNoteScreen(
+        state = viewModel.state,
+        uiAction = {
+            when (it) {
+                EditNoteAction.GoBack -> {
+                    navController.navigate(Routes.NOTES_VIEW)
+                }
+                else -> {
+                    viewModel.onUiAction(it)
+                }
+            }
+        }
+    )
+}
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun NoteScreen(onBackClick: () -> Unit, viewModel: NoteViewModel = hiltViewModel()) {
+fun EditNoteScreen(
+    state: EditNoteState,
+    uiAction: (EditNoteAction) -> Unit
+) {
     val coroutineScope = rememberCoroutineScope()
-    var showBottomSheet by rememberSaveable {  mutableStateOf(false) }
+    var showBottomSheet by rememberSaveable { mutableStateOf(false) }
 
     var showTimePicker by remember { mutableStateOf(false) }
     var showDatePicker by remember { mutableStateOf(false) }
 
-    var datePickerState: DatePickerState? = null
-    var timePickerState: TimePickerState? = null
-
-    var saveButtonEnabled by rememberSaveable {
-        mutableStateOf(false)
-    }
-
-    viewModel.undoRedo.addListener {
-        saveButtonEnabled = true
-    }
-
-    if (viewModel.note != null) {
-        val ldt = viewModel.alarmItem?.date ?: currentSystemTime()
-        datePickerState = rememberDatePickerState(initialSelectedDateMillis = ldt.toLong())
-        timePickerState = rememberTimePickerState(initialHour = ldt.hour, initialMinute = ldt.minute)
-    }
+    val ldt = state.editNoteItem.alarmItem?.date ?: currentSystemTime()
+    val datePickerState = rememberDatePickerState(initialSelectedDateMillis = ldt.toLong())
+    val timePickerState =  rememberTimePickerState(initialHour = ldt.hour, initialMinute = ldt.minute)
 
     Scaffold(
         topBar = {
             TopAppBar(
                 navigationIcon = {
                     IconButton(onClick = {
-                        viewModel.save()
-                        onBackClick()
+                        uiAction(EditNoteAction.SaveAction)
+                        uiAction(EditNoteAction.GoBack)
                     }) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
@@ -109,8 +119,8 @@ fun NoteScreen(onBackClick: () -> Unit, viewModel: NoteViewModel = hiltViewModel
                 },
                 actions = {
                     IconButton(onClick = {
-                        viewModel.undo()
-                    }, enabled = viewModel.undoRedo.canUndo) {
+                        uiAction(EditNoteAction.UndoAction)
+                    }, enabled = state.canUndo) {
                         Icon(
                             imageVector = ImageVector.vectorResource(id = R.drawable.undo),
                             contentDescription = null,
@@ -118,8 +128,8 @@ fun NoteScreen(onBackClick: () -> Unit, viewModel: NoteViewModel = hiltViewModel
                     }
 
                     IconButton(onClick = {
-                        viewModel.redo()
-                    }, enabled = viewModel.undoRedo.canRedo) {
+                        uiAction(EditNoteAction.RedoAction)
+                    }, enabled = state.canRedo) {
                         Icon(
                             imageVector = ImageVector.vectorResource(id = R.drawable.redo),
                             contentDescription = null,
@@ -127,11 +137,10 @@ fun NoteScreen(onBackClick: () -> Unit, viewModel: NoteViewModel = hiltViewModel
                     }
 
                     IconButton(onClick = {
-                        saveButtonEnabled = false
-                        viewModel.save()
-                    }, enabled = saveButtonEnabled) {
+                        uiAction(EditNoteAction.SaveAction)
+                    }, enabled = state.canSave) {
                         Icon(
-                            imageVector =  Icons.Filled.Check,
+                            imageVector = Icons.Filled.Check,
                             contentDescription = null,
                         )
                     }
@@ -140,7 +149,7 @@ fun NoteScreen(onBackClick: () -> Unit, viewModel: NoteViewModel = hiltViewModel
                         coroutineScope.launch {
                             showBottomSheet = true
                         }
-                    }, enabled = viewModel.note != null) {
+                    }, enabled = true) {
                         Icon(
                             imageVector = Icons.Filled.MoreVert,
                             contentDescription = null,
@@ -155,14 +164,13 @@ fun NoteScreen(onBackClick: () -> Unit, viewModel: NoteViewModel = hiltViewModel
                     .padding(it)
                     .fillMaxSize()
             ) {
-
-                val title = viewModel.title
-                
-                if (viewModel.alarmItem != null) {
-                    Spacer(modifier = Modifier
-                        .height(1.dp)
-                        .background(Color.Black)
-                        .fillMaxWidth())
+                if (state.editNoteItem.alarmItem != null) {
+                    Spacer(
+                        modifier = Modifier
+                            .height(1.dp)
+                            .background(Color.Black)
+                            .fillMaxWidth()
+                    )
 
                     Row(
                         modifier = Modifier
@@ -178,14 +186,16 @@ fun NoteScreen(onBackClick: () -> Unit, viewModel: NoteViewModel = hiltViewModel
                                 contentDescription = null,
                             )
                         }
-                        Text(text = viewModel.alarmItem?.date?.toLong()?.toFormattedDateTime() ?: "",
+                        Text(
+                            text = state.editNoteItem.alarmItem.date.toLong().toFormattedDateTime(),
 
                             modifier = Modifier
                                 .weight(1.0f)
-                                .align(Alignment.CenterVertically))
+                                .align(Alignment.CenterVertically)
+                        )
 
                         IconButton(onClick = {
-                            viewModel.updateAlarm(null)
+                            uiAction(EditNoteAction.SetAlarmAction(null))
                         }) {
                             Icon(
                                 imageVector = Icons.Filled.Delete,
@@ -194,17 +204,16 @@ fun NoteScreen(onBackClick: () -> Unit, viewModel: NoteViewModel = hiltViewModel
                         }
                     }
                 }
-                
+
                 TextField(
-                    title,
+                    state.editNoteItem.title,
                     singleLine = true,
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(64.dp),
                     onValueChange = {
                         if (it.length <= 30) {
-                            saveButtonEnabled = true
-                            viewModel.updateTitle(it)
+                            uiAction(EditNoteAction.SetTitleAction(it))
                         }
                     })
 
@@ -213,11 +222,11 @@ fun NoteScreen(onBackClick: () -> Unit, viewModel: NoteViewModel = hiltViewModel
                     scrollState.scrollTo(scrollState.maxValue)
                 }
 
-                TextField(viewModel.content, modifier = Modifier
+                TextField(state.editNoteItem.content, modifier = Modifier
                     .fillMaxWidth()
                     .fillMaxHeight(1.0f)
                     .verticalScroll(scrollState), onValueChange = {
-                    viewModel.updateContent(it)
+                        uiAction(EditNoteAction.SetContentAction(it))
                 })
             }
 
@@ -227,8 +236,8 @@ fun NoteScreen(onBackClick: () -> Unit, viewModel: NoteViewModel = hiltViewModel
 
                     when (it) {
                         CustomBottomSheetAction.Delete -> {
-                            onBackClick()
-                            viewModel.delete()
+                            uiAction(EditNoteAction.GoBack)
+                            uiAction(EditNoteAction.DeleteAction)
                         }
 
                         CustomBottomSheetAction.Dismiss -> {
@@ -267,14 +276,14 @@ fun NoteScreen(onBackClick: () -> Unit, viewModel: NoteViewModel = hiltViewModel
                     }
                 )
                 {
-                    DatePicker(state = datePickerState!!)
+                    DatePicker(state = datePickerState)
                 }
             }
 
             if (showTimePicker) {
                 TimePickerDialog(
                     content = {
-                        TimePicker(state = timePickerState!!)
+                        TimePicker(state = timePickerState)
                     },
                     onCancel = {
                         showTimePicker = false
@@ -282,10 +291,13 @@ fun NoteScreen(onBackClick: () -> Unit, viewModel: NoteViewModel = hiltViewModel
                     onConfirm = {
                         showTimePicker = false
 
-                        datePickerState?.selectedDateMillis?.let {date ->
-                            timePickerState?.let { time ->
-                                val ldt = LocalDateTime.of(date.toLocalDate(), LocalTime.of(time.hour, time.minute))
-                                viewModel.updateAlarm(AlarmItem(ldt, viewModel.title))
+                        datePickerState.selectedDateMillis?.let { date ->
+                            timePickerState.let { time ->
+                                val ldtLocal = LocalDateTime.of(
+                                    date.toLocalDate(),
+                                    LocalTime.of(time.hour, time.minute)
+                                )
+                                uiAction(EditNoteAction.SetAlarmAction(AlarmItem(ldtLocal, state.editNoteItem.title)))
                             }
                         }
                     })

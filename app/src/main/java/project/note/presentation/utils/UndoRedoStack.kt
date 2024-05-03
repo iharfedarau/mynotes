@@ -13,10 +13,10 @@ class UndoRedoStack {
     private var stackPos = -1
     private var actionListeners = mutableListOf<UndoRedoStackActionListener>()
 
-    var canUndo by mutableStateOf(false)
+    var canUndo = false
         private set
 
-    var canRedo by mutableStateOf(false)
+    var canRedo = false
         private set
 
     fun setInitialValue(initialValue: String) {
