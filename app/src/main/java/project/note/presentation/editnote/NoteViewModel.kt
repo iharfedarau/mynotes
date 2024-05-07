@@ -73,6 +73,10 @@ class NoteViewModel @Inject constructor(
 
     private fun save() {
         viewModelScope.launch {
+            val alarmItemRef = note.alarmDate?.let { date ->
+                AlarmItem(date.toLocalDateTime(), note.alarmMessage)
+            }
+
             val noteToSave = note.copy(
                 title = state.editNoteItem.title,
                 content = state.editNoteItem.content.text,
@@ -81,10 +85,6 @@ class NoteViewModel @Inject constructor(
                 alarmMessage = state.editNoteItem.alarmItem?.message)
 
             repository.insert(noteToSave)
-
-            val alarmItemRef = noteToSave.alarmDate?.let { date ->
-                AlarmItem(date.toLocalDateTime(), noteToSave.alarmMessage)
-            }
 
             if (state.editNoteItem.alarmItem != alarmItemRef) {
                 state.editNoteItem.alarmItem?.let(alarmScheduler::schedule)
