@@ -90,238 +90,239 @@ fun EditNoteScreen(
     state: EditNoteState,
     uiAction: (EditNoteAction) -> Unit
 ) {
-    val coroutineScope = rememberCoroutineScope()
-    var showBottomSheet by rememberSaveable { mutableStateOf(false) }
+    if (state.editNoteItem != null) {
+        val coroutineScope = rememberCoroutineScope()
+        var showBottomSheet by rememberSaveable { mutableStateOf(false) }
 
-    var showTimePicker by remember { mutableStateOf(false) }
-    var showDatePicker by remember { mutableStateOf(false) }
+        var showTimePicker by remember { mutableStateOf(false) }
+        var showDatePicker by remember { mutableStateOf(false) }
 
+        val ldt = if (state.editNoteItem.alarmItem?.date != null) {
+            OffsetDateTime.ofInstant(Instant.ofEpochMilli(state.editNoteItem.alarmItem.date), ZoneId.systemDefault())
+        } else {
+            OffsetDateTime.now()
+        }
 
-    val ldt = if (state.editNoteItem.alarmItem?.date != null) {
-        OffsetDateTime.ofInstant(Instant.ofEpochMilli(state.editNoteItem.alarmItem.date), ZoneId.systemDefault())
-    } else {
-        OffsetDateTime.now()
-    }
+        val datePickerState = rememberDatePickerState(
+            initialSelectedDateMillis = ldt.toEpochSecond() * 1000
+        )
+        val timePickerState =
+            rememberTimePickerState(initialHour = ldt.hour, initialMinute = ldt.minute)
 
-    val datePickerState = rememberDatePickerState(
-        initialSelectedDateMillis = ldt.toEpochSecond() * 1000
-    )
-    val timePickerState =
-        rememberTimePickerState(initialHour = ldt.hour, initialMinute = ldt.minute)
-
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                navigationIcon = {
-                    IconButton(onClick = {
-                        uiAction(EditNoteAction.SaveAction)
-                        uiAction(EditNoteAction.GoBack)
-                    }) {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = null,
-                        )
-                    }
-                },
-                title = {
-
-                },
-                actions = {
-                    IconButton(onClick = {
-                        uiAction(EditNoteAction.UndoAction)
-                    }, enabled = state.canUndo) {
-                        Icon(
-                            imageVector = ImageVector.vectorResource(id = R.drawable.undo),
-                            contentDescription = null,
-                        )
-                    }
-
-                    IconButton(onClick = {
-                        uiAction(EditNoteAction.RedoAction)
-                    }, enabled = state.canRedo) {
-                        Icon(
-                            imageVector = ImageVector.vectorResource(id = R.drawable.redo),
-                            contentDescription = null,
-                        )
-                    }
-
-                    IconButton(onClick = {
-                        uiAction(EditNoteAction.SaveAction)
-                    }, enabled = state.canSave) {
-                        Icon(
-                            imageVector = Icons.Filled.Check,
-                            contentDescription = null,
-                        )
-                    }
-
-                    IconButton(onClick = {
-                        coroutineScope.launch {
-                            showBottomSheet = true
-                        }
-                    }, enabled = true) {
-                        Icon(
-                            imageVector = Icons.Filled.MoreVert,
-                            contentDescription = null,
-                        )
-                    }
-                }
-            )
-        },
-        content = { it ->
-            Column(
-                modifier = Modifier
-                    .padding(it)
-                    .fillMaxSize()
-            ) {
-                if (state.editNoteItem.alarmItem != null) {
-                    Spacer(
-                        modifier = Modifier
-                            .height(1.dp)
-                            .background(Color.Black)
-                            .fillMaxWidth()
-                    )
-
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(48.dp)
-                            .background(color = NoteAppTheme.colors.surfaceVariant),
-                    ) {
+        Scaffold(
+            topBar = {
+                TopAppBar(
+                    navigationIcon = {
                         IconButton(onClick = {
-                            showDatePicker = true
-                        }) {
-                            Icon(
-                                imageVector = Icons.Filled.DateRange,
-                                contentDescription = null,
-                            )
-                        }
-
-                        Text(
-                            text = LocalDateTime.ofInstant(
-                                Instant.ofEpochMilli(state.editNoteItem.alarmItem.date),
-                                ZoneId.systemDefault()
-                            ).format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")),
-
-                            modifier = Modifier
-                                .weight(1.0f)
-                                .align(Alignment.CenterVertically)
-                        )
-
-                        IconButton(onClick = {
-                            uiAction(EditNoteAction.SetAlarmAction(null))
-                        }) {
-                            Icon(
-                                imageVector = Icons.Filled.Delete,
-                                contentDescription = null,
-                            )
-                        }
-                    }
-                }
-
-                TextField(
-                    state.editNoteItem.title,
-                    singleLine = true,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(64.dp),
-                    onValueChange = {
-                        if (it.length <= 30) {
-                            uiAction(EditNoteAction.SetTitleAction(it))
-                        }
-                    })
-
-                val scrollState = rememberScrollState()
-                LaunchedEffect(scrollState.maxValue) {
-                    scrollState.scrollTo(scrollState.maxValue)
-                }
-
-                TextField(state.editNoteItem.content, modifier = Modifier
-                    .fillMaxWidth()
-                    .fillMaxHeight(1.0f)
-                    .verticalScroll(scrollState), onValueChange = {
-                    uiAction(EditNoteAction.SetContentAction(it))
-                })
-            }
-
-            if (showBottomSheet) {
-                CustomBottomSheet {
-                    showBottomSheet = false
-
-                    when (it) {
-                        CustomBottomSheetAction.Delete -> {
+                            uiAction(EditNoteAction.SaveAction)
                             uiAction(EditNoteAction.GoBack)
-                            uiAction(EditNoteAction.DeleteAction)
-                        }
-
-                        CustomBottomSheetAction.Dismiss -> {
-                            showBottomSheet = false
-                        }
-
-                        CustomBottomSheetAction.SetAlarm -> {
-                            showDatePicker = true
-                        }
-                    }
-
-                }
-            }
-
-            if (showDatePicker) {
-                DatePickerDialog(
-                    onDismissRequest = {
-                        showDatePicker = false
-                    },
-                    confirmButton = {
-                        Button(onClick = {
-                            showDatePicker = false
-                            showTimePicker = true
-                        }
-
-                        ) {
-                            Text(text = "OK")
-                        }
-                    },
-                    dismissButton = {
-                        Button(onClick = {
-                            showDatePicker = false
                         }) {
-                            Text(text = "Cancel")
+                            Icon(
+                                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                                contentDescription = null,
+                            )
+                        }
+                    },
+                    title = {
+
+                    },
+                    actions = {
+                        IconButton(onClick = {
+                            uiAction(EditNoteAction.UndoAction)
+                        }, enabled = state.canUndo) {
+                            Icon(
+                                imageVector = ImageVector.vectorResource(id = R.drawable.undo),
+                                contentDescription = null,
+                            )
+                        }
+
+                        IconButton(onClick = {
+                            uiAction(EditNoteAction.RedoAction)
+                        }, enabled = state.canRedo) {
+                            Icon(
+                                imageVector = ImageVector.vectorResource(id = R.drawable.redo),
+                                contentDescription = null,
+                            )
+                        }
+
+                        IconButton(onClick = {
+                            uiAction(EditNoteAction.SaveAction)
+                        }, enabled = state.canSave) {
+                            Icon(
+                                imageVector = Icons.Filled.Check,
+                                contentDescription = null,
+                            )
+                        }
+
+                        IconButton(onClick = {
+                            coroutineScope.launch {
+                                showBottomSheet = true
+                            }
+                        }, enabled = true) {
+                            Icon(
+                                imageVector = Icons.Filled.MoreVert,
+                                contentDescription = null,
+                            )
                         }
                     }
                 )
-                {
-                    DatePicker(state = datePickerState)
+            },
+            content = { it ->
+                Column(
+                    modifier = Modifier
+                        .padding(it)
+                        .fillMaxSize()
+                ) {
+                    if (state.editNoteItem.alarmItem != null) {
+                        Spacer(
+                            modifier = Modifier
+                                .height(1.dp)
+                                .background(Color.Black)
+                                .fillMaxWidth()
+                        )
+
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(48.dp)
+                                .background(color = NoteAppTheme.colors.surfaceVariant),
+                        ) {
+                            IconButton(onClick = {
+                                showDatePicker = true
+                            }) {
+                                Icon(
+                                    imageVector = Icons.Filled.DateRange,
+                                    contentDescription = null,
+                                )
+                            }
+
+                            Text(
+                                text = LocalDateTime.ofInstant(
+                                    Instant.ofEpochMilli(state.editNoteItem.alarmItem.date),
+                                    ZoneId.systemDefault()
+                                ).format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")),
+
+                                modifier = Modifier
+                                    .weight(1.0f)
+                                    .align(Alignment.CenterVertically)
+                            )
+
+                            IconButton(onClick = {
+                                uiAction(EditNoteAction.SetAlarmAction(null))
+                            }) {
+                                Icon(
+                                    imageVector = Icons.Filled.Delete,
+                                    contentDescription = null,
+                                )
+                            }
+                        }
+                    }
+
+                    TextField(
+                        state.editNoteItem.title,
+                        singleLine = true,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(64.dp),
+                        onValueChange = {
+                            if (it.length <= 30) {
+                                uiAction(EditNoteAction.SetTitleAction(it))
+                            }
+                        })
+
+                    val scrollState = rememberScrollState()
+                    LaunchedEffect(scrollState.maxValue) {
+                        scrollState.scrollTo(scrollState.maxValue)
+                    }
+
+                    TextField(state.editNoteItem.content, modifier = Modifier
+                        .fillMaxWidth()
+                        .fillMaxHeight(1.0f)
+                        .verticalScroll(scrollState), onValueChange = {
+                        uiAction(EditNoteAction.SetContentAction(it))
+                    })
                 }
-            }
 
-            if (showTimePicker) {
-                TimePickerDialog(
-                    content = {
-                        TimePicker(state = timePickerState)
-                    },
-                    onCancel = {
-                        showTimePicker = false
-                    },
-                    onConfirm = {
-                        showTimePicker = false
+                if (showBottomSheet) {
+                    CustomBottomSheet {
+                        showBottomSheet = false
 
-                        datePickerState.selectedDateMillis?.let { dateMs ->
-                            val ldtLocal = dateMs +
-                                    timePickerState.hour * 3600 * 1000 +
-                                    timePickerState.minute * 60 * 1000 -
-                                    OffsetDateTime.now().offset.totalSeconds * 1000
+                        when (it) {
+                            CustomBottomSheetAction.Delete -> {
+                                uiAction(EditNoteAction.GoBack)
+                                uiAction(EditNoteAction.DeleteAction)
+                            }
 
-                            uiAction(
-                                EditNoteAction.SetAlarmAction(
-                                    AlarmItem(
-                                        ldtLocal, state.editNoteItem.title
+                            CustomBottomSheetAction.Dismiss -> {
+                                showBottomSheet = false
+                            }
+
+                            CustomBottomSheetAction.SetAlarm -> {
+                                showDatePicker = true
+                            }
+                        }
+
+                    }
+                }
+
+                if (showDatePicker) {
+                    DatePickerDialog(
+                        onDismissRequest = {
+                            showDatePicker = false
+                        },
+                        confirmButton = {
+                            Button(onClick = {
+                                showDatePicker = false
+                                showTimePicker = true
+                            }
+
+                            ) {
+                                Text(text = "OK")
+                            }
+                        },
+                        dismissButton = {
+                            Button(onClick = {
+                                showDatePicker = false
+                            }) {
+                                Text(text = "Cancel")
+                            }
+                        }
+                    )
+                    {
+                        DatePicker(state = datePickerState)
+                    }
+                }
+
+                if (showTimePicker) {
+                    TimePickerDialog(
+                        content = {
+                            TimePicker(state = timePickerState)
+                        },
+                        onCancel = {
+                            showTimePicker = false
+                        },
+                        onConfirm = {
+                            showTimePicker = false
+
+                            datePickerState.selectedDateMillis?.let { dateMs ->
+                                val ldtLocal = dateMs +
+                                        timePickerState.hour * 3600 * 1000 +
+                                        timePickerState.minute * 60 * 1000 -
+                                        OffsetDateTime.now().offset.totalSeconds * 1000
+
+                                uiAction(
+                                    EditNoteAction.SetAlarmAction(
+                                        AlarmItem(
+                                            ldtLocal, state.editNoteItem.title
+                                        )
                                     )
                                 )
-                            )
-                        }
-                    })
+                            }
+                        })
+                }
             }
-        }
-    )
+        )
+    }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)

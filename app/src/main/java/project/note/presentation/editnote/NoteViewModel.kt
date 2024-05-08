@@ -51,7 +51,7 @@ class NoteViewModel @Inject constructor(
                     undoRedo.setInitialValue(note.content)
                     undoRedo.addListener { content ->
                         state = state.copy(
-                            editNoteItem = state.editNoteItem.copy(content = content),
+                            editNoteItem = state.editNoteItem?.copy(content = content),
                             canUndo = undoRedo.canUndo,
                             canRedo = undoRedo.canRedo
                         )
@@ -71,22 +71,25 @@ class NoteViewModel @Inject constructor(
 
     private fun save() {
         viewModelScope.launch {
-            val alarmItemRef = note.alarmDate?.let { date ->
-                AlarmItem(date, note.alarmMessage)
-            }
+            val editNoteItem = state.editNoteItem
+            if (editNoteItem != null) {
+                val alarmItemRef = note.alarmDate?.let { date ->
+                    AlarmItem(date, note.alarmMessage)
+                }
 
-            val noteToSave = note.copy(
-                title = state.editNoteItem.title,
-                content = state.editNoteItem.content.text,
-                modificationDate = Calendar.getInstance().timeInMillis,
-                alarmDate = state.editNoteItem.alarmItem?.date,
-                alarmMessage = state.editNoteItem.alarmItem?.message)
+                val noteToSave = note.copy(
+                    title = editNoteItem.title,
+                    content = editNoteItem.content.text,
+                    modificationDate = Calendar.getInstance().timeInMillis,
+                    alarmDate = editNoteItem.alarmItem?.date,
+                    alarmMessage = editNoteItem.alarmItem?.message)
 
-            repository.insert(noteToSave)
+                repository.insert(noteToSave)
 
-            if (state.editNoteItem.alarmItem != alarmItemRef) {
-                state.editNoteItem.alarmItem?.let(alarmScheduler::schedule)
-                alarmItemRef?.let(alarmScheduler::cancel)
+                if (editNoteItem.alarmItem != alarmItemRef) {
+                    editNoteItem.alarmItem?.let(alarmScheduler::schedule)
+                    alarmItemRef?.let(alarmScheduler::cancel)
+                }
             }
         }
     }
@@ -108,12 +111,12 @@ class NoteViewModel @Inject constructor(
             }
 
             is EditNoteAction.SetAlarmAction -> {
-                state = state.copy(editNoteItem = state.editNoteItem.copy(alarmItem = event.item))
+                state = state.copy(editNoteItem = state.editNoteItem?.copy(alarmItem = event.item))
                 state = state.copy(canSave = true)
             }
 
             is EditNoteAction.SetContentAction -> {
-                if (event.content.text != state.editNoteItem.content.text) {
+                if (event.content.text != state.editNoteItem?.content?.text) {
                     state = state.copy(canSave = true)
                 }
 
@@ -121,7 +124,7 @@ class NoteViewModel @Inject constructor(
             }
 
             is EditNoteAction.SetTitleAction -> {
-                state = state.copy(editNoteItem = state.editNoteItem.copy(title = event.title))
+                state = state.copy(editNoteItem = state.editNoteItem?.copy(title = event.title))
                 state = state.copy(canSave = true)
             }
 
