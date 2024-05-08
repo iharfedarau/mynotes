@@ -13,8 +13,6 @@ import project.note.domain.repository.NoteRepository
 import project.note.domain.alarm.AlarmItem
 import project.note.domain.alarm.AlarmScheduler
 import project.note.domain.repository.Note
-import project.note.domain.utils.toLocalDateTime
-import project.note.domain.utils.toLong
 
 import project.note.presentation.utils.UndoRedoStack
 import java.util.Calendar
@@ -45,7 +43,7 @@ class NoteViewModel @Inject constructor(
                         TextFieldValue(note.content),
                         note.alarmDate?.let { date ->
                             AlarmItem(
-                                date = date.toLocalDateTime(),
+                                date = date,
                                 message = note.alarmMessage
                             )
                         }))
@@ -74,14 +72,14 @@ class NoteViewModel @Inject constructor(
     private fun save() {
         viewModelScope.launch {
             val alarmItemRef = note.alarmDate?.let { date ->
-                AlarmItem(date.toLocalDateTime(), note.alarmMessage)
+                AlarmItem(date, note.alarmMessage)
             }
 
             val noteToSave = note.copy(
                 title = state.editNoteItem.title,
                 content = state.editNoteItem.content.text,
                 modificationDate = Calendar.getInstance().timeInMillis,
-                alarmDate = state.editNoteItem.alarmItem?.date?.toLong(),
+                alarmDate = state.editNoteItem.alarmItem?.date,
                 alarmMessage = state.editNoteItem.alarmItem?.message)
 
             repository.insert(noteToSave)

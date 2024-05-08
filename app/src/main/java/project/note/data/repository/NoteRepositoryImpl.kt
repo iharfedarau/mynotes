@@ -10,7 +10,6 @@ import project.note.data.toNoteDto
 import project.note.domain.alarm.AlarmItem
 import project.note.domain.repository.Note
 import project.note.domain.repository.NoteRepository
-import project.note.domain.utils.toLocalDateTime
 
 class NoteRepositoryImpl(private val noteService: NoteService,
                      private val noteDao: NoteDao
@@ -28,7 +27,7 @@ class NoteRepositoryImpl(private val noteService: NoteService,
         val result = mutableListOf<AlarmItem>()
         noteDao.getAlarms().forEach {
             if (it.alarmDate != null) {
-                result.add(AlarmItem(it.alarmDate.toLocalDateTime(), it.alarmMessage))
+                result.add(AlarmItem(it.alarmDate, it.alarmMessage))
             }
         }
         return result

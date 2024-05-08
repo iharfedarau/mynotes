@@ -8,7 +8,6 @@ import project.note.domain.repository.Note
 import project.note.domain.repository.NoteRepository
 import project.note.domain.alarm.AlarmItem
 import project.note.domain.alarm.AlarmScheduler
-import project.note.domain.utils.toLocalDateTime
 import javax.inject.Inject
 
 @HiltViewModel
@@ -28,7 +27,7 @@ class NotesViewModel @Inject constructor(
         }
 
         note.alarmDate?.let {
-            alarmScheduler.cancel(AlarmItem(it.toLocalDateTime(), note.alarmMessage))
+            alarmScheduler.cancel(AlarmItem(it, note.alarmMessage))
         }
     }
 

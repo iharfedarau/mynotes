@@ -55,14 +55,13 @@ import androidx.navigation.NavHostController
 import kotlinx.coroutines.launch
 import project.note.R
 import project.note.domain.alarm.AlarmItem
-import project.note.domain.utils.currentSystemTime
-import project.note.domain.utils.toLong
 import project.note.presentation.ui.NoteAppTheme
 import project.note.presentation.utils.Routes
-import project.note.presentation.utils.toFormattedDateTime
-import project.note.presentation.utils.toLocalDate
+import java.time.Instant
 import java.time.LocalDateTime
-import java.time.LocalTime
+import java.time.OffsetDateTime
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
 
 @Composable
 fun RootEditNoteScreen(
@@ -76,6 +75,7 @@ fun RootEditNoteScreen(
                 EditNoteAction.GoBack -> {
                     navController.navigate(Routes.NOTES_VIEW)
                 }
+
                 else -> {
                     viewModel.onUiAction(it)
                 }
@@ -96,9 +96,18 @@ fun EditNoteScreen(
     var showTimePicker by remember { mutableStateOf(false) }
     var showDatePicker by remember { mutableStateOf(false) }
 
-    val ldt = state.editNoteItem.alarmItem?.date ?: currentSystemTime()
-    val datePickerState = rememberDatePickerState(initialSelectedDateMillis = ldt.toLong())
-    val timePickerState =  rememberTimePickerState(initialHour = ldt.hour, initialMinute = ldt.minute)
+
+    val ldt = if (state.editNoteItem.alarmItem?.date != null) {
+        OffsetDateTime.ofInstant(Instant.ofEpochMilli(state.editNoteItem.alarmItem.date), ZoneId.systemDefault())
+    } else {
+        OffsetDateTime.now()
+    }
+
+    val datePickerState = rememberDatePickerState(
+        initialSelectedDateMillis = ldt.toEpochSecond() * 1000
+    )
+    val timePickerState =
+        rememberTimePickerState(initialHour = ldt.hour, initialMinute = ldt.minute)
 
     Scaffold(
         topBar = {
@@ -186,8 +195,12 @@ fun EditNoteScreen(
                                 contentDescription = null,
                             )
                         }
+
                         Text(
-                            text = state.editNoteItem.alarmItem.date.toLong().toFormattedDateTime(),
+                            text = LocalDateTime.ofInstant(
+                                Instant.ofEpochMilli(state.editNoteItem.alarmItem.date),
+                                ZoneId.systemDefault()
+                            ).format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")),
 
                             modifier = Modifier
                                 .weight(1.0f)
@@ -226,7 +239,7 @@ fun EditNoteScreen(
                     .fillMaxWidth()
                     .fillMaxHeight(1.0f)
                     .verticalScroll(scrollState), onValueChange = {
-                        uiAction(EditNoteAction.SetContentAction(it))
+                    uiAction(EditNoteAction.SetContentAction(it))
                 })
             }
 
@@ -291,14 +304,19 @@ fun EditNoteScreen(
                     onConfirm = {
                         showTimePicker = false
 
-                        datePickerState.selectedDateMillis?.let { date ->
-                            timePickerState.let { time ->
-                                val ldtLocal = LocalDateTime.of(
-                                    date.toLocalDate(),
-                                    LocalTime.of(time.hour, time.minute)
+                        datePickerState.selectedDateMillis?.let { dateMs ->
+                            val ldtLocal = dateMs +
+                                    timePickerState.hour * 3600 * 1000 +
+                                    timePickerState.minute * 60 * 1000 -
+                                    OffsetDateTime.now().offset.totalSeconds * 1000
+
+                            uiAction(
+                                EditNoteAction.SetAlarmAction(
+                                    AlarmItem(
+                                        ldtLocal, state.editNoteItem.title
+                                    )
                                 )
-                                uiAction(EditNoteAction.SetAlarmAction(AlarmItem(ldtLocal, state.editNoteItem.title)))
-                            }
+                            )
                         }
                     })
             }
