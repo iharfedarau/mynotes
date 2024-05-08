@@ -7,14 +7,14 @@ import android.content.Intent
 import android.util.Log
 import project.note.domain.alarm.AlarmScheduler
 import project.note.domain.alarm.AlarmItem
+import java.time.OffsetDateTime
 import java.time.ZoneOffset
-import java.time.ZonedDateTime
 
 class AlarmSchedulerImpl(private val context: Context) : AlarmScheduler {
     private val alarmManager = context.getSystemService(AlarmManager::class.java)
 
     override fun schedule(alarmItem: AlarmItem) {
-        val currentUTCTime = ZonedDateTime.now(ZoneOffset.UTC).toEpochSecond() * 1000
+        val currentUTCTime = OffsetDateTime.now(ZoneOffset.UTC).toEpochSecond() * 1000
 
         if (currentUTCTime < alarmItem.date) {
             val intent = Intent(context, AlarmReceiver::class.java).apply {
