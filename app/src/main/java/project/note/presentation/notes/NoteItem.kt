@@ -19,6 +19,7 @@ import androidx.compose.ui.unit.dp
 import me.saket.swipe.SwipeAction
 import me.saket.swipe.SwipeableActionsBox
 import project.note.domain.repository.Note
+import project.note.presentation.dialogs.CustomAlertDialog
 
 @Composable
 fun NoteItem(note: Note, onClick: (Note) -> Unit, onDelete: (Note) -> Unit) {
@@ -42,9 +43,12 @@ fun NoteItem(note: Note, onClick: (Note) -> Unit, onDelete: (Note) -> Unit) {
         swipeThreshold = 200.dp,
         endActions = listOf(delete)
     ) {
-        Row(modifier = Modifier.fillMaxWidth().height(64.dp).clickable{
-            onClick(note)
-        }) {
+        Row(modifier = Modifier
+            .fillMaxWidth()
+            .height(64.dp)
+            .clickable {
+                onClick(note)
+            }) {
             Text(text = note.title,
                 modifier = Modifier
                     .weight(1.0f)
@@ -54,7 +58,9 @@ fun NoteItem(note: Note, onClick: (Note) -> Unit, onDelete: (Note) -> Unit) {
                 Icon(
                     imageVector = Icons.Filled.DateRange,
                     contentDescription = null,
-                    modifier = Modifier.align(Alignment.CenterVertically).padding(16.dp),
+                    modifier = Modifier
+                        .align(Alignment.CenterVertically)
+                        .padding(16.dp),
                 )
             }
         }

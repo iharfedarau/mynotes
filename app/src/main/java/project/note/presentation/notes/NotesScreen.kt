@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.Icon
@@ -31,6 +32,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import project.note.BuildConfig
 import project.note.R
+import project.note.presentation.dialogs.CustomAlertDialog
 import java.util.Calendar
 
 @Composable
@@ -85,6 +87,9 @@ fun NotesScreen(
             ) { paddings ->
                 val notes by viewModel.allNotes.collectAsState(initial = emptyList())
                 var isRefreshing by remember { mutableStateOf(false) }
+                var noteToDelete by remember {
+                    mutableStateOf<Note?>(null)
+                }
 
                 PullToRefreshLazyColumn(
                     items = notes,
@@ -92,7 +97,7 @@ fun NotesScreen(
                         NoteItem(note = note,
                             onClick = onItemClick,
                             onDelete = {
-                                viewModel.delete(it)
+                                noteToDelete = it
                             })
                     },
                     modifier = Modifier.padding(paddings),
@@ -105,6 +110,20 @@ fun NotesScreen(
                         }
                     })
 
+                if (noteToDelete != null) {
+                    CustomAlertDialog(
+                        onDismissRequest = {
+                            noteToDelete = null
+                        },
+                        onConfirmation = {
+                            viewModel.delete(noteToDelete!!)
+                            noteToDelete = null
+                        },
+                        dialogTitle = stringResource(id = R.string.delete),
+                        dialogText = stringResource(id = R.string.delete_note_confirmation),
+                        icon = Icons.Default.Delete
+                    )
+                }
             }
         }
     )
