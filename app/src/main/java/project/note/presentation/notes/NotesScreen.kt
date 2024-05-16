@@ -37,7 +37,7 @@ import java.util.Calendar
 
 @Composable
 fun NotesScreen(
-    onItemClick: (note: Note) -> Unit,
+    onItemClick: (noteId: Long) -> Unit,
     viewModel: NotesViewModel = hiltViewModel()
 ) {
 
@@ -72,8 +72,10 @@ fun NotesScreen(
             Scaffold(
                 floatingActionButton = {
                     FloatingActionButton {
-                        viewModel.insert(Note("Unknown", "", Calendar.getInstance().timeInMillis)) {
-                            onItemClick(it)
+                        viewModel.insert(Note("Unknown", "", Calendar.getInstance().timeInMillis)) {note ->
+                            note.id?.let {id ->
+                                onItemClick(id)
+                            }
                         }
                     }
                 },

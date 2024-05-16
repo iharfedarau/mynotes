@@ -56,7 +56,7 @@ import kotlinx.coroutines.launch
 import project.note.R
 import project.note.domain.alarm.AlarmItem
 import project.note.presentation.ui.NoteAppTheme
-import project.note.presentation.utils.Routes
+import project.note.presentation.utils.NotesScreenRoute
 import java.time.Instant
 import java.time.LocalDateTime
 import java.time.OffsetDateTime
@@ -66,14 +66,14 @@ import java.time.format.DateTimeFormatter
 @Composable
 fun RootEditNoteScreen(
     navController: NavHostController,
-    viewModel: NoteViewModel = hiltViewModel()
+    viewModel: EditNoteViewModel = hiltViewModel()
 ) {
     EditNoteScreen(
         state = viewModel.state,
         uiAction = {
             when (it) {
                 EditNoteAction.GoBack -> {
-                    navController.navigate(Routes.NOTES_VIEW)
+                    navController.navigate(NotesScreenRoute)
                 }
 
                 else -> {

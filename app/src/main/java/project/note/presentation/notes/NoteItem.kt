@@ -19,10 +19,9 @@ import androidx.compose.ui.unit.dp
 import me.saket.swipe.SwipeAction
 import me.saket.swipe.SwipeableActionsBox
 import project.note.domain.repository.Note
-import project.note.presentation.dialogs.CustomAlertDialog
 
 @Composable
-fun NoteItem(note: Note, onClick: (Note) -> Unit, onDelete: (Note) -> Unit) {
+fun NoteItem(note: Note, onClick: (Long) -> Unit, onDelete: (Note) -> Unit) {
     val delete = SwipeAction(
         onSwipe = {
             onDelete(note)
@@ -47,12 +46,16 @@ fun NoteItem(note: Note, onClick: (Note) -> Unit, onDelete: (Note) -> Unit) {
             .fillMaxWidth()
             .height(64.dp)
             .clickable {
-                onClick(note)
+                note.id?.let { noteId ->
+                    onClick(noteId)
+                }
             }) {
-            Text(text = note.title,
+            Text(
+                text = note.title,
                 modifier = Modifier
                     .weight(1.0f)
-                    .padding(16.dp))
+                    .padding(16.dp)
+            )
 
             if (note.alarmDate != null) {
                 Icon(

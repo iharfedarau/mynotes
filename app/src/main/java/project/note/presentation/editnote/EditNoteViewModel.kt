@@ -7,19 +7,21 @@ import androidx.compose.ui.text.input.TextFieldValue
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.navigation.toRoute
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
 import project.note.domain.repository.NoteRepository
 import project.note.domain.alarm.AlarmItem
 import project.note.domain.alarm.AlarmScheduler
 import project.note.domain.repository.Note
+import project.note.presentation.utils.EditNoteScreenRoute
 
 import project.note.presentation.utils.UndoRedoStack
 import java.util.Calendar
 import javax.inject.Inject
 
 @HiltViewModel
-class NoteViewModel @Inject constructor(
+class EditNoteViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
     private val repository: NoteRepository,
     private val alarmScheduler: AlarmScheduler
@@ -32,7 +34,8 @@ class NoteViewModel @Inject constructor(
     private val undoRedo = UndoRedoStack()
 
     init {
-        val noteId = savedStateHandle.get<Long>("noteId")!!
+
+        val noteId = savedStateHandle.toRoute<EditNoteScreenRoute>().noteId
         if (noteId > -1) {
             viewModelScope.launch {
                 repository.getById(noteId)?.let { localNote ->

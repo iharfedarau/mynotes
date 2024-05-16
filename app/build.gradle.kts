@@ -2,7 +2,8 @@ import java.io.ByteArrayOutputStream
 
 plugins {
     alias(libs.plugins.android.application)
-    id("org.jetbrains.kotlin.android")
+    alias(libs.plugins.jetbrains.kotlin.android)
+    alias(libs.plugins.kotlin.serialization)
     id("com.google.devtools.ksp")
     id("com.google.dagger.hilt.android")
     id("kotlin-parcelize")
@@ -10,8 +11,8 @@ plugins {
 
 val isNetworkServiceAvailable = "isNetworkServiceAvailable"
 
-fun getCurrentCommit (): String {
-    val stdout =  ByteArrayOutputStream()
+fun getCurrentCommit(): String {
+    val stdout = ByteArrayOutputStream()
     exec {
         commandLine("git", "rev-parse", "--short", "HEAD")
         standardOutput = stdout
@@ -43,7 +44,10 @@ android {
         release {
             isMinifyEnabled = true
             isShrinkResources = true
-            proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
+            proguardFiles(
+                getDefaultProguardFile("proguard-android-optimize.txt"),
+                "proguard-rules.pro"
+            )
         }
     }
     compileOptions {
@@ -58,7 +62,7 @@ android {
         buildConfig = true
     }
     composeOptions {
-        kotlinCompilerExtensionVersion = "1.5.11"
+        kotlinCompilerExtensionVersion = "1.5.14"
     }
     packaging {
         resources {
@@ -97,13 +101,19 @@ dependencies {
     //Swipe
     implementation(libs.swipe)
 
+    //Navigation
+    implementation(libs.navigation.compose)
+    implementation(libs.kotlinx.serialization.json)
+
     //DI
     implementation(libs.hilt.android)
     implementation(libs.androidx.hilt.navigation.compose)
     ksp(libs.hilt.android.compiler)
+
     // For instrumentation tests
     androidTestImplementation(libs.hilt.android.testing)
     kspAndroidTest(libs.hilt.compiler)
+
     // For local unit tests
     testImplementation(libs.hilt.android.testing)
     kspTest(libs.hilt.compiler)
