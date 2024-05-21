@@ -3,29 +3,31 @@ package project.note.data.repository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import project.note.BuildConfig
-import project.note.data.db.NoteDao
+import project.note.data.db.NoteRoomDao
+import project.note.data.db.toNote
+import project.note.data.db.toNoteDao
 import project.note.data.network.NoteService
-import project.note.data.toNote
-import project.note.data.toNoteDto
+import project.note.data.network.toNote
+import project.note.data.network.toNoteDto
 import project.note.domain.alarm.AlarmItem
 import project.note.domain.repository.Note
 import project.note.domain.repository.NoteRepository
 
 class NoteRepositoryImpl(private val noteService: NoteService,
-                     private val noteDao: NoteDao
+                     private val noteRoomDao: NoteRoomDao
 ): NoteRepository {
 
     override fun allNotes(): Flow<List<Note>> {
-        return noteDao.getAll().map { noteDtoList ->
-            noteDtoList.map { noteDto ->
-                Note(noteDto.title, noteDto.content, noteDto.modificationDate, noteDto.alarmDate, noteDto.alarmMessage, noteDto.id)
+        return noteRoomDao.getAll().map { noteDaoList ->
+            noteDaoList.map { noteDao ->
+                Note(noteDao.title, noteDao.content, noteDao.modificationDate, noteDao.alarmDate, noteDao.alarmMessage, noteDao.id)
             }
         }
     }
 
     override suspend fun getAllAlarms(): List<AlarmItem> {
         val result = mutableListOf<AlarmItem>()
-        noteDao.getAlarms().forEach {
+        noteRoomDao.getAlarms().forEach {
             if (it.alarmDate != null) {
                 result.add(AlarmItem(it.alarmDate, it.alarmMessage))
             }
@@ -34,13 +36,17 @@ class NoteRepositoryImpl(private val noteService: NoteService,
     }
 
     override suspend fun getById(id: Long): Note? {
-        return noteDao.getById(id)?.toNote()
+        return noteRoomDao.getById(id)?.toNote()
     }
 
     override  suspend fun refreshNotes() {
         if (BuildConfig.isNetworkServiceAvailable) {
             try {
-                noteDao.insert(noteService.getNotes())
+                noteRoomDao.insert(noteService.getNotes().map {
+                    it.toNote()
+                }.map {
+                    it.toNoteDao()
+                })
             } catch (e: Exception) {
                 println(e.message)
             }
@@ -56,7 +62,7 @@ class NoteRepositoryImpl(private val noteService: NoteService,
             }
         }
 
-        return note.copy( id = noteDao.insert(note.toNoteDto()) )
+        return note.copy( id = noteRoomDao.insert(note.toNoteDao()) )
     }
 
     override suspend fun delete(id: Long) {
@@ -64,7 +70,7 @@ class NoteRepositoryImpl(private val noteService: NoteService,
             if (BuildConfig.isNetworkServiceAvailable) {
                 noteService.delete(id)
             }
-            noteDao.delete(id)
+            noteRoomDao.delete(id)
         } catch (e: Exception) {
             println(e.message)
         }

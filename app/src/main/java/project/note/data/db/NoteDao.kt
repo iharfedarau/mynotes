@@ -1,29 +1,24 @@
 package project.note.data.db
 
-import androidx.room.Dao
-import androidx.room.Insert
-import androidx.room.OnConflictStrategy
-import androidx.room.Query
-import kotlinx.coroutines.flow.Flow
-import project.note.data.NoteDto
+import androidx.room.ColumnInfo
+import androidx.room.Entity
+import androidx.room.PrimaryKey
+import project.note.domain.repository.Note
+import java.io.Serializable
 
-@Dao
-interface NoteDao {
-    @Query("SELECT * FROM note_table ORDER BY modification_date DESC")
-    fun getAll(): Flow<List<NoteDto>>
+@Entity(tableName="note_table")
+data class NoteDao (
+    @ColumnInfo(name = "title") val title: String,
+    @ColumnInfo(name = "content") val content: String,
+    @ColumnInfo(name = "modification_date") val modificationDate: Long,
+    @ColumnInfo(name = "alarm_date") val alarmDate: Long? = null,
+    @ColumnInfo(name = "alarm_message") val alarmMessage: String? = null,
+    @PrimaryKey(autoGenerate = true) val id: Long? = null): Serializable
 
-    @Query("SELECT * FROM note_table WHERE alarm_date IS NOT NULL ORDER BY modification_date DESC")
-    suspend fun getAlarms(): List<NoteDto>
+fun Note.toNoteDao(): NoteDao {
+    return NoteDao(title, content, modificationDate, alarmDate, alarmMessage, id)
+}
 
-    @Query("SELECT * FROM note_table WHERE id=:id")
-    suspend fun getById(id: Long): NoteDto?
-
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insert(note: NoteDto): Long
-
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insert(notes: List<NoteDto>)
-
-    @Query("DELETE FROM note_table WHERE id=:id")
-    suspend fun delete(id: Long)
+fun NoteDao.toNote(): Note {
+    return Note(title, content, modificationDate, alarmDate, alarmMessage, id)
 }
