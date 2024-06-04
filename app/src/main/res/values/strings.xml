@@ -12,4 +12,5 @@
     <string name="note_actions">Note actions</string>
     <string name="note_notification_title">Note alarm</string>
     <string name="delete_note_confirmation">Delete note?</string>
+    <string name="create_new_note">New</string>
 </resources>

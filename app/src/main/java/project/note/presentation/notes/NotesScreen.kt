@@ -1,6 +1,9 @@
 package project.note.presentation.notes
 
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
@@ -8,6 +11,8 @@ import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.Icon
+import androidx.compose.material3.LinearProgressIndicator
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalDrawerSheet
 import androidx.compose.material3.ModalNavigationDrawer
 import androidx.compose.material3.NavigationDrawerItem
@@ -23,6 +28,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -45,88 +51,113 @@ fun NotesScreen(
     val drawerState = rememberDrawerState(DrawerValue.Closed)
     val items = listOf(Icons.Default.Info)
     val selectedItem = remember { mutableStateOf(items[0]) }
+    var newNoteIsAdding by remember {
+        mutableStateOf(false)
+    }
 
-    ModalNavigationDrawer(
-        drawerState = drawerState,
-        drawerContent = {
+    if (newNoteIsAdding) {
+        Box(modifier = Modifier.fillMaxSize(),
+            contentAlignment = Alignment.Center
+        ) {
+            LinearProgressIndicator (
+                modifier = Modifier.fillMaxWidth().padding(16.dp),
+                color = MaterialTheme.colorScheme.secondary,
+                trackColor = MaterialTheme.colorScheme.surfaceVariant,
+            )
+        }
+    } else {
+        ModalNavigationDrawer(
+            drawerState = drawerState,
+            drawerContent = {
 
-            ModalDrawerSheet {
-                Spacer(Modifier.height(12.dp))
-                items.forEach { item ->
-                    NavigationDrawerItem(
-                        icon = { Icon(item, contentDescription = null) },
-                        label = { Text(stringResource(R.string.version) + ": " + BuildConfig.VERSION_NAME) },
-                        selected = item == selectedItem.value,
-                        onClick = {
-                            scope.launch { drawerState.close() }
-                            selectedItem.value = item
-                        },
-                        modifier = Modifier.padding(NavigationDrawerItemDefaults.ItemPadding)
-                    )
+                ModalDrawerSheet {
+                    Spacer(Modifier.height(12.dp))
+                    items.forEach { item ->
+                        NavigationDrawerItem(
+                            icon = { Icon(item, contentDescription = null) },
+                            label = { Text(stringResource(R.string.version) + ": " + BuildConfig.VERSION_NAME) },
+                            selected = item == selectedItem.value,
+                            onClick = {
+                                scope.launch { drawerState.close() }
+                                selectedItem.value = item
+                            },
+                            modifier = Modifier.padding(NavigationDrawerItemDefaults.ItemPadding)
+                        )
+                    }
                 }
-            }
 
 
-        },
-        content = {
-            Scaffold(
-                floatingActionButton = {
-                    FloatingActionButton {
-                        viewModel.insert(Note("Unknown", "", Calendar.getInstance().timeInMillis)) {note ->
-                            note.id?.let {id ->
-                                onItemClick(id)
+            },
+            content = {
+                Scaffold(
+                    floatingActionButton = {
+                        FloatingActionButton {
+                            newNoteIsAdding = true
+
+                            viewModel.insert(
+                                Note(
+                                    "Unknown",
+                                    "",
+                                    Calendar.getInstance().timeInMillis
+                                )
+                            ) { note ->
+                                if (note.id != null) {
+                                    onItemClick(note.id)
+                                }
+
+                                newNoteIsAdding = true
                             }
                         }
-                    }
-                },
-                bottomBar = {
-                    BottomBar(onMenuClick = {
-                        scope.launch {
-                            drawerState.open()
-                        }
-                    })
-                }
-            ) { paddings ->
-                val notes by viewModel.allNotes.collectAsState(initial = emptyList())
-                var isRefreshing by remember { mutableStateOf(false) }
-                var noteToDelete by remember {
-                    mutableStateOf<Note?>(null)
-                }
-
-                PullToRefreshLazyColumn(
-                    items = notes,
-                    content = { note ->
-                        NoteItem(note = note,
-                            onClick = onItemClick,
-                            onDelete = {
-                                noteToDelete = it
-                            })
                     },
-                    modifier = Modifier.padding(paddings),
-                    isRefreshing = isRefreshing,
-                    onRefresh = {
-                        scope.launch {
-                            isRefreshing = true
-                            delay(1000L) // Simulated API call
-                            isRefreshing = false
-                        }
-                    })
+                    bottomBar = {
+                        BottomBar(onMenuClick = {
+                            scope.launch {
+                                drawerState.open()
+                            }
+                        })
+                    }
+                ) { paddings ->
+                    val notes by viewModel.allNotes.collectAsState(initial = emptyList())
+                    var isRefreshing by remember { mutableStateOf(false) }
+                    var noteToDelete by remember {
+                        mutableStateOf<Note?>(null)
+                    }
 
-                if (noteToDelete != null) {
-                    CustomAlertDialog(
-                        onDismissRequest = {
-                            noteToDelete = null
+                    PullToRefreshLazyColumn(
+                        items = notes,
+                        content = { note ->
+                            NoteItem(note = note,
+                                onClick = onItemClick,
+                                onDelete = {
+                                    noteToDelete = it
+                                })
                         },
-                        onConfirmation = {
-                            viewModel.delete(noteToDelete!!)
-                            noteToDelete = null
-                        },
-                        dialogTitle = stringResource(id = R.string.delete),
-                        dialogText = stringResource(id = R.string.delete_note_confirmation),
-                        icon = Icons.Default.Delete
-                    )
+                        modifier = Modifier.padding(paddings),
+                        isRefreshing = isRefreshing,
+                        onRefresh = {
+                            scope.launch {
+                                isRefreshing = true
+                                delay(1000L) // Simulated API call
+                                isRefreshing = false
+                            }
+                        })
+
+                    if (noteToDelete != null) {
+                        CustomAlertDialog(
+                            onDismissRequest = {
+                                noteToDelete = null
+                            },
+                            onConfirmation = {
+                                viewModel.delete(noteToDelete!!)
+                                noteToDelete = null
+                            },
+                            dialogTitle = stringResource(id = R.string.delete),
+                            dialogText = stringResource(id = R.string.delete_note_confirmation),
+                            icon = Icons.Default.Delete
+                        )
+                    }
                 }
             }
-        }
-    )
+        )
+    }
 }
