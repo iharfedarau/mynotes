@@ -1,5 +1,8 @@
 package project.note.presentation.notes
 
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -16,18 +19,42 @@ class NotesViewModel @Inject constructor(
     private val alarmScheduler: AlarmScheduler
 ) : ViewModel() {
     val allNotes = repository.allNotes()
+    var state by mutableStateOf(NotesState())
+        private set
 
-    fun insert(note: Note, callback: (note: Note) -> Unit) = viewModelScope.launch {
-        callback(repository.insert(note))
+    private fun insert(note: Note) {
+        state = state.copy(inProgress = true)
+
+        viewModelScope.launch {
+            state = state.copy(insertedNoteId = repository.insert(note).id)
+        }
     }
 
-    fun delete(note: Note) = viewModelScope.launch {
-        note.id?.let {
-            repository.delete(it)
-        }
+    private fun delete(note: Note) {
+        state = state.copy(inProgress = true)
 
-        note.alarmDate?.let {
-            alarmScheduler.cancel(AlarmItem(it, note.alarmMessage))
+        viewModelScope.launch {
+            note.id?.let {
+                repository.delete(it)
+            }
+
+            note.alarmDate?.let {
+                alarmScheduler.cancel(AlarmItem(it, note.alarmMessage))
+            }
+
+            state = state.copy(inProgress = false)
+        }
+    }
+
+    fun onUiAction(action: NotesAction) {
+        when (action) {
+            is NotesAction.Insert -> {
+                insert(action.note)
+            }
+
+            is NotesAction.Delete -> {
+                delete(action.note)
+            }
         }
     }
 

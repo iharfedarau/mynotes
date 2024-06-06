@@ -22,6 +22,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.rememberDrawerState
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -43,24 +44,31 @@ import java.util.Calendar
 
 @Composable
 fun NotesScreen(
-    onItemClick: (noteId: Long) -> Unit,
+    openNote: (noteId: Long) -> Unit,
     viewModel: NotesViewModel = hiltViewModel()
 ) {
-
     val scope = rememberCoroutineScope()
     val drawerState = rememberDrawerState(DrawerValue.Closed)
     val items = listOf(Icons.Default.Info)
     val selectedItem = remember { mutableStateOf(items[0]) }
-    var newNoteIsAdding by remember {
-        mutableStateOf(false)
+
+    LaunchedEffect(key1 = viewModel.state.insertedNoteId) {
+        viewModel.state.insertedNoteId?.let {
+            scope.launch {
+                openNote(it)
+            }
+        }
     }
 
-    if (newNoteIsAdding) {
-        Box(modifier = Modifier.fillMaxSize(),
+    if (viewModel.state.inProgress) {
+        Box(
+            modifier = Modifier.fillMaxSize(),
             contentAlignment = Alignment.Center
         ) {
-            LinearProgressIndicator (
-                modifier = Modifier.fillMaxWidth().padding(16.dp),
+            LinearProgressIndicator(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp),
                 color = MaterialTheme.colorScheme.secondary,
                 trackColor = MaterialTheme.colorScheme.surfaceVariant,
             )
@@ -92,21 +100,15 @@ fun NotesScreen(
                 Scaffold(
                     floatingActionButton = {
                         FloatingActionButton {
-                            newNoteIsAdding = true
-
-                            viewModel.insert(
-                                Note(
-                                    "Unknown",
-                                    "",
-                                    Calendar.getInstance().timeInMillis
+                            viewModel.onUiAction(
+                                NotesAction.Insert(
+                                    Note(
+                                        "Unknown",
+                                        "",
+                                        Calendar.getInstance().timeInMillis
+                                    )
                                 )
-                            ) { note ->
-                                if (note.id != null) {
-                                    onItemClick(note.id)
-                                }
-
-                                newNoteIsAdding = true
-                            }
+                            )
                         }
                     },
                     bottomBar = {
@@ -127,7 +129,7 @@ fun NotesScreen(
                         items = notes,
                         content = { note ->
                             NoteItem(note = note,
-                                onClick = onItemClick,
+                                onClick = openNote,
                                 onDelete = {
                                     noteToDelete = it
                                 })
@@ -148,7 +150,7 @@ fun NotesScreen(
                                 noteToDelete = null
                             },
                             onConfirmation = {
-                                viewModel.delete(noteToDelete!!)
+                                viewModel.onUiAction(NotesAction.Delete(noteToDelete!!))
                                 noteToDelete = null
                             },
                             dialogTitle = stringResource(id = R.string.delete),

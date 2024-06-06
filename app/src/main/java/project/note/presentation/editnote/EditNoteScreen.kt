@@ -90,15 +90,15 @@ fun EditNoteScreen(
     state: EditNoteState,
     uiAction: (EditNoteAction) -> Unit
 ) {
-    if (state.editNoteItem != null) {
+    if (state.editNote != null) {
         val coroutineScope = rememberCoroutineScope()
         var showBottomSheet by rememberSaveable { mutableStateOf(false) }
 
         var showTimePicker by remember { mutableStateOf(false) }
         var showDatePicker by remember { mutableStateOf(false) }
 
-        val ldt = if (state.editNoteItem.alarmItem?.date != null) {
-            OffsetDateTime.ofInstant(Instant.ofEpochMilli(state.editNoteItem.alarmItem.date), ZoneId.systemDefault())
+        val ldt = if (state.editNote.alarmItem?.date != null) {
+            OffsetDateTime.ofInstant(Instant.ofEpochMilli(state.editNote.alarmItem.date), ZoneId.systemDefault())
         } else {
             OffsetDateTime.now()
         }
@@ -173,7 +173,7 @@ fun EditNoteScreen(
                         .padding(it)
                         .fillMaxSize()
                 ) {
-                    if (state.editNoteItem.alarmItem != null) {
+                    if (state.editNote.alarmItem != null) {
                         Spacer(
                             modifier = Modifier
                                 .height(1.dp)
@@ -198,7 +198,7 @@ fun EditNoteScreen(
 
                             Text(
                                 text = LocalDateTime.ofInstant(
-                                    Instant.ofEpochMilli(state.editNoteItem.alarmItem.date),
+                                    Instant.ofEpochMilli(state.editNote.alarmItem.date),
                                     ZoneId.systemDefault()
                                 ).format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")),
 
@@ -219,7 +219,7 @@ fun EditNoteScreen(
                     }
 
                     TextField(
-                        state.editNoteItem.title,
+                        state.editNote.title,
                         singleLine = true,
                         modifier = Modifier
                             .fillMaxWidth()
@@ -235,7 +235,7 @@ fun EditNoteScreen(
                         scrollState.scrollTo(scrollState.maxValue)
                     }
 
-                    TextField(state.editNoteItem.content, modifier = Modifier
+                    TextField(state.editNote.content, modifier = Modifier
                         .fillMaxWidth()
                         .fillMaxHeight(1.0f)
                         .verticalScroll(scrollState), onValueChange = {
@@ -313,7 +313,7 @@ fun EditNoteScreen(
                                 uiAction(
                                     EditNoteAction.SetAlarmAction(
                                         AlarmItem(
-                                            ldtLocal, state.editNoteItem.title
+                                            ldtLocal, state.editNote.title
                                         )
                                     )
                                 )

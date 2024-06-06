@@ -41,7 +41,7 @@ class EditNoteViewModel @Inject constructor(
                 repository.getById(noteId)?.let { localNote ->
                     note = localNote
 
-                    state = state.copy(editNoteItem = EditNoteItem(
+                    state = state.copy(editNote = EditNote(
                         note.title,
                         TextFieldValue(note.content),
                         note.alarmDate?.let { date ->
@@ -54,7 +54,7 @@ class EditNoteViewModel @Inject constructor(
                     undoRedo.setInitialValue(note.content)
                     undoRedo.addListener { content ->
                         state = state.copy(
-                            editNoteItem = state.editNoteItem?.copy(content = content),
+                            editNote = state.editNote?.copy(content = content),
                             canUndo = undoRedo.canUndo,
                             canRedo = undoRedo.canRedo
                         )
@@ -74,7 +74,7 @@ class EditNoteViewModel @Inject constructor(
 
     private fun save() {
         viewModelScope.launch {
-            val editNoteItem = state.editNoteItem
+            val editNoteItem = state.editNote
             if (editNoteItem != null) {
                 val alarmItemRef = note.alarmDate?.let { date ->
                     AlarmItem(date, note.alarmMessage)
@@ -97,8 +97,8 @@ class EditNoteViewModel @Inject constructor(
         }
     }
 
-    fun onUiAction(event: EditNoteAction) {
-        when (event) {
+    fun onUiAction(action: EditNoteAction) {
+        when (action) {
             EditNoteAction.DeleteAction -> {
                 delete()
             }
@@ -114,20 +114,20 @@ class EditNoteViewModel @Inject constructor(
             }
 
             is EditNoteAction.SetAlarmAction -> {
-                state = state.copy(editNoteItem = state.editNoteItem?.copy(alarmItem = event.item))
+                state = state.copy(editNote = state.editNote?.copy(alarmItem = action.item))
                 state = state.copy(canSave = true)
             }
 
             is EditNoteAction.SetContentAction -> {
-                if (event.content.text != state.editNoteItem?.content?.text) {
+                if (action.content.text != state.editNote?.content?.text) {
                     state = state.copy(canSave = true)
                 }
 
-                undoRedo.push(event.content)
+                undoRedo.push(action.content)
             }
 
             is EditNoteAction.SetTitleAction -> {
-                state = state.copy(editNoteItem = state.editNoteItem?.copy(title = event.title))
+                state = state.copy(editNote = state.editNote?.copy(title = action.title))
                 state = state.copy(canSave = true)
             }
 

@@ -37,7 +37,7 @@ class MainActivity : ComponentActivity() {
                     startDestination = NotesScreenRoute
                 ) {
                     composable<NotesScreenRoute> {
-                        NotesScreen(onItemClick = { noteId ->
+                        NotesScreen(openNote = { noteId ->
                             navController.navigate(EditNoteScreenRoute(noteId))
                         })
                     }
