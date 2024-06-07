@@ -4,14 +4,12 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Check
@@ -29,13 +27,13 @@ import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
+import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.TimePicker
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.material3.rememberTimePickerState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -98,7 +96,10 @@ fun EditNoteScreen(
         var showDatePicker by remember { mutableStateOf(false) }
 
         val ldt = if (state.editNote.alarmItem?.date != null) {
-            OffsetDateTime.ofInstant(Instant.ofEpochMilli(state.editNote.alarmItem.date), ZoneId.systemDefault())
+            OffsetDateTime.ofInstant(
+                Instant.ofEpochMilli(state.editNote.alarmItem.date),
+                ZoneId.systemDefault()
+            )
         } else {
             OffsetDateTime.now()
         }
@@ -173,6 +174,7 @@ fun EditNoteScreen(
                         .padding(it)
                         .fillMaxSize()
                 ) {
+
                     if (state.editNote.alarmItem != null) {
                         Spacer(
                             modifier = Modifier
@@ -218,29 +220,40 @@ fun EditNoteScreen(
                         }
                     }
 
+                    HorizontalDivider(color = Color.Black, thickness = 1.dp)
+
                     TextField(
                         state.editNote.title,
                         singleLine = true,
                         modifier = Modifier
                             .fillMaxWidth()
                             .height(64.dp),
+                        colors = TextFieldDefaults.colors().copy(
+                            unfocusedContainerColor = NoteAppTheme.colors.onPrimary,
+                            focusedContainerColor = NoteAppTheme.colors.onPrimary,
+                            errorIndicatorColor = NoteAppTheme.colors.onPrimary,
+                            focusedIndicatorColor = NoteAppTheme.colors.onPrimary,
+                            unfocusedIndicatorColor = NoteAppTheme.colors.onPrimary
+                        ),
                         onValueChange = {
                             if (it.length <= 30) {
                                 uiAction(EditNoteAction.SetTitleAction(it))
                             }
                         })
-
-                    val scrollState = rememberScrollState()
-                    LaunchedEffect(scrollState.maxValue) {
-                        scrollState.scrollTo(scrollState.maxValue)
-                    }
+                    HorizontalDivider(color = Color.Black, thickness = 1.dp)
 
                     TextField(state.editNote.content, modifier = Modifier
                         .fillMaxWidth()
-                        .fillMaxHeight(1.0f)
-                        .verticalScroll(scrollState), onValueChange = {
-                        uiAction(EditNoteAction.SetContentAction(it))
-                    })
+                        .wrapContentHeight(),
+                        colors = TextFieldDefaults.colors().copy(
+                            unfocusedContainerColor = NoteAppTheme.colors.onPrimary,
+                            focusedContainerColor = NoteAppTheme.colors.onPrimary,
+                            errorIndicatorColor = NoteAppTheme.colors.onPrimary,
+                            focusedIndicatorColor = NoteAppTheme.colors.onPrimary,
+                            unfocusedIndicatorColor = NoteAppTheme.colors.onPrimary
+                        ), onValueChange = {
+                            uiAction(EditNoteAction.SetContentAction(it))
+                        })
                 }
 
                 if (showBottomSheet) {
