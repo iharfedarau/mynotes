@@ -22,11 +22,11 @@ fun getCurrentCommit(): String {
 }
 
 android {
-    namespace = "project.note"
+    namespace = "dev.iharfedarau.mynotes"
     compileSdk = 34
 
     defaultConfig {
-        applicationId = "project.note"
+        applicationId = "dev.iharfedarau.mynotes"
         minSdk = 29
         targetSdk = 34
         versionCode = 1

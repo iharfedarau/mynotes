@@ -1,4 +1,4 @@
-package project.note
+package dev.iharfedarau.mynotes
 //
 //import org.junit.Test
 //

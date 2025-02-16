@@ -1,4 +1,4 @@
-package project.note
+package dev.iharfedarau.mynotes
 //
 //import androidx.test.platform.app.InstrumentationRegistry
 //import androidx.test.ext.junit.runners.AndroidJUnit4
@@ -19,6 +19,6 @@ package project.note
 //    fun useAppContext() {
 //        // Context of the app under test.
 //        val appContext = InstrumentationRegistry.getInstrumentation().targetContext
-//        assertEquals("project.note", appContext.packageName)
+//        assertEquals("dev.iharfedarau.mynotes", appContext.packageName)
 //    }
 //}
