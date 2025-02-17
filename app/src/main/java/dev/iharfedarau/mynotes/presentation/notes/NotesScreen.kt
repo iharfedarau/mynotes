@@ -1,5 +1,8 @@
 package dev.iharfedarau.mynotes.presentation.notes
 
+import android.net.Uri
+import android.os.Environment
+import android.util.Log
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -8,7 +11,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.Info
 import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LinearProgressIndicator
@@ -33,13 +35,17 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.core.net.toFile
+import androidx.core.net.toUri
 import dev.iharfedarau.mynotes.domain.repository.Note
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.darkrockstudios.libraries.mpfilepicker.DirectoryPicker
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import dev.iharfedarau.mynotes.BuildConfig
 import dev.iharfedarau.mynotes.R
 import dev.iharfedarau.mynotes.presentation.dialogs.CustomAlertDialog
+import dev.iharfedarau.mynotes.presentation.notes.drawer.DrawerAction
+import java.io.File
 import java.util.Calendar
 
 @Composable
@@ -49,8 +55,39 @@ fun NotesScreen(
 ) {
     val scope = rememberCoroutineScope()
     val drawerState = rememberDrawerState(DrawerValue.Closed)
-    val items = listOf(Icons.Default.Info)
-    val selectedItem = remember { mutableStateOf(items[0]) }
+    var showDirPicker by remember { mutableStateOf(false) }
+    var export by remember { mutableStateOf(false) }
+
+    if (showDirPicker) {
+        DirectoryPicker(showDirPicker) { path ->
+            path?.let {
+                if (export) {
+                    viewModel.onUiAction(NotesAction.Export(path.toUri()))
+                } else {
+                    viewModel.onUiAction(NotesAction.Import(path.toUri()))
+                }
+            }
+            showDirPicker = false
+        }
+    }
+
+
+    val items = listOf(
+        DrawerAction.Export({
+            export = true
+            showDirPicker = true
+
+        }),
+        DrawerAction.Import({
+            export = false
+            showDirPicker = true
+        }),
+        DrawerAction.About({
+            scope.launch { drawerState.close() }
+
+        })
+    )
+    val selectedItem = remember { mutableStateOf(items.last()) }
 
     LaunchedEffect(key1 = viewModel.state.insertedNoteId) {
         viewModel.state.insertedNoteId?.let {
@@ -77,17 +114,16 @@ fun NotesScreen(
         ModalNavigationDrawer(
             drawerState = drawerState,
             drawerContent = {
-
                 ModalDrawerSheet {
                     Spacer(Modifier.height(12.dp))
-                    items.forEach { item ->
+                    items.forEach {
                         NavigationDrawerItem(
-                            icon = { Icon(item, contentDescription = null) },
-                            label = { Text(stringResource(R.string.version) + ": " + BuildConfig.VERSION_NAME) },
-                            selected = item == selectedItem.value,
+                            icon = { Icon(it.icon, contentDescription = null) },
+                            label = { Text(stringResource(it.textResId) + if (it.extraText != null) ": ${it.extraText}" else "") },
+                            selected = it == selectedItem.value,
                             onClick = {
-                                scope.launch { drawerState.close() }
-                                selectedItem.value = item
+                                it.onClick()
+                                selectedItem.value = it
                             },
                             modifier = Modifier.padding(NavigationDrawerItemDefaults.ItemPadding)
                         )

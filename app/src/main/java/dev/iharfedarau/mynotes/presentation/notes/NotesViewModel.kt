@@ -1,5 +1,6 @@
 package dev.iharfedarau.mynotes.presentation.notes
 
+import android.net.Uri
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -11,12 +12,15 @@ import dev.iharfedarau.mynotes.domain.repository.Note
 import dev.iharfedarau.mynotes.domain.repository.NoteRepository
 import dev.iharfedarau.mynotes.domain.alarm.AlarmItem
 import dev.iharfedarau.mynotes.domain.alarm.AlarmScheduler
+import dev.iharfedarau.mynotes.domain.export.NotesExporter
+import kotlinx.coroutines.flow.firstOrNull
 import javax.inject.Inject
 
 @HiltViewModel
 class NotesViewModel @Inject constructor(
     private val repository: NoteRepository,
-    private val alarmScheduler: AlarmScheduler
+    private val alarmScheduler: AlarmScheduler,
+    private val exporter: NotesExporter
 ) : ViewModel() {
     val allNotes = repository.allNotes()
     var state by mutableStateOf(NotesState())
@@ -46,6 +50,31 @@ class NotesViewModel @Inject constructor(
         }
     }
 
+    private fun export(absDirPath: Uri) {
+        state = state.copy(inProgress = true)
+        viewModelScope.launch {
+            allNotes.firstOrNull()?.let { notes ->
+                exporter.export(notes,absDirPath)
+            }
+            state = state.copy(inProgress = false)
+        }
+    }
+
+    private fun import(absDirPath: Uri) {
+        state = state.copy(inProgress = true)
+
+        viewModelScope.launch {
+            val notes = exporter.import(absDirPath)
+            notes?.let {
+                for (note in it) {
+                    //insert(note)
+                }
+            }
+
+            state = state.copy(inProgress = false)
+        }
+    }
+
     fun onUiAction(action: NotesAction) {
         when (action) {
             is NotesAction.Insert -> {
@@ -54,6 +83,14 @@ class NotesViewModel @Inject constructor(
 
             is NotesAction.Delete -> {
                 delete(action.note)
+            }
+
+            is NotesAction.Export -> {
+                export(action.dirPath)
+            }
+
+            is NotesAction.Import -> {
+                import(action.dirPath)
             }
         }
     }

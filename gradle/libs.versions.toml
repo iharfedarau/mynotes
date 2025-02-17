@@ -17,6 +17,7 @@ swipeVersion = "1.3.0"
 composeNavigationVersion = "2.8.7"
 serializationVersion = "1.6.3"
 kspVersion = "2.1.10-1.0.29"
+mpfilepickerVersion = "3.1.0"
 
 [libraries]
 androidx-compose-bom = { module = "androidx.compose:compose-bom", version.ref = "composeBomVersion" }
@@ -41,6 +42,7 @@ retrofit = { module = "com.squareup.retrofit2:retrofit", version.ref = "retrofit
 swipe = { module = "me.saket.swipe:swipe", version.ref = "swipeVersion" }
 navigation-compose = { module = "androidx.navigation:navigation-compose", version.ref = "composeNavigationVersion" }
 kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "serializationVersion"}
+mpfilepicker = { module = "com.darkrockstudios:mpfilepicker", version.ref = "mpfilepickerVersion"}
 
 [plugins]
 android-application = {id = "com.android.application", version.ref = "androidApplicationVersion"}

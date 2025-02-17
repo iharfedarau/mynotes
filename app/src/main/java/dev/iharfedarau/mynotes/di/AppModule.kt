@@ -12,6 +12,8 @@ import dev.iharfedarau.mynotes.data.repository.NoteRepositoryImpl
 import dev.iharfedarau.mynotes.domain.repository.NoteRepository
 import dev.iharfedarau.mynotes.domain.alarm.AlarmScheduler
 import dev.iharfedarau.mynotes.data.alarm.AlarmSchedulerImpl
+import dev.iharfedarau.mynotes.data.exporter.JsonNotesExporter
+import dev.iharfedarau.mynotes.domain.export.NotesExporter
 import javax.inject.Singleton
 
 @Module
@@ -27,5 +29,11 @@ class  AppModule {
     @Singleton
     fun provideAlarmScheduler(@ApplicationContext context: Context): AlarmScheduler {
         return AlarmSchedulerImpl(context)
+    }
+
+    @Provides
+    @Singleton
+    fun provideExporter(): NotesExporter {
+        return JsonNotesExporter()
     }
 }

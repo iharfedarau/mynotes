@@ -6,6 +6,8 @@
     <string name="remove">Remove</string>
     <string name="notes">Notes</string>
     <string name="reminders">Reminders</string>
+    <string name="export_data">Export</string>
+    <string name="import_data">Import</string>
     <string name="version">Version</string>
     <string name="delete">Delete</string>
     <string name="set_alarm">Set alarm</string>
