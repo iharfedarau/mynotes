@@ -23,12 +23,12 @@ fun getCurrentCommit(): String {
 
 android {
     namespace = "dev.iharfedarau.mynotes"
-    compileSdk = 34
+    compileSdk = 35
 
     defaultConfig {
         applicationId = "dev.iharfedarau.mynotes"
         minSdk = 29
-        targetSdk = 34
+        targetSdk = 35
         versionCode = 1
         versionName = getCurrentCommit()
 
