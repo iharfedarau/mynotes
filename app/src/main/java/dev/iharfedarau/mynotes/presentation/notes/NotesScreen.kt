@@ -1,11 +1,5 @@
 package dev.iharfedarau.mynotes.presentation.notes
 
-import android.content.Intent
-import android.net.Uri
-import android.os.Environment
-import android.provider.DocumentsContract
-import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -42,62 +36,13 @@ import dev.iharfedarau.mynotes.R
 import dev.iharfedarau.mynotes.domain.repository.Note
 import dev.iharfedarau.mynotes.presentation.dialogs.CustomAlertDialog
 import dev.iharfedarau.mynotes.presentation.notes.drawer.DrawerAction
+import dev.iharfedarau.mynotes.presentation.utils.FilePicker
+import dev.iharfedarau.mynotes.presentation.utils.FilePickerMode
+import dev.iharfedarau.mynotes.presentation.utils.isExternalStorageAvailable
+import dev.iharfedarau.mynotes.presentation.utils.isExternalStorageReadOnly
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.util.Calendar
-
-//https://developer.android.com/training/data-storage/shared/documents-files#create-file
-enum class FilePickerMode {
-    CreateFile,
-    OpenFile,
-}
-
-@Composable
-fun FilePicker(
-    show: Boolean,
-    mode: FilePickerMode,
-    onFileHandled: (FilePickerMode, Uri?) -> Unit
-) {
-    val launcher =
-        rememberLauncherForActivityResult(contract = ActivityResultContracts.StartActivityForResult()) { result ->
-            onFileHandled(mode, result.data?.data)
-        }
-
-    val downloadDirPath =
-        Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).toString()
-    val intent = Intent().apply {
-        when (mode) {
-            FilePickerMode.CreateFile -> {
-                action = Intent.ACTION_CREATE_DOCUMENT
-                putExtra(Intent.EXTRA_TITLE, "mynotes_backup.json")
-            }
-
-            FilePickerMode.OpenFile -> {
-                action = Intent.ACTION_OPEN_DOCUMENT
-            }
-        }
-        addCategory(Intent.CATEGORY_OPENABLE)
-        type = "application/json"
-
-        // Optionally, specify a URI for the directory that should be opened in
-        // the system file picker before your app creates the document.
-        putExtra(DocumentsContract.EXTRA_INITIAL_URI, Uri.parse(downloadDirPath))
-    }
-    LaunchedEffect(show) {
-        if (show) {
-            launcher.launch(intent)
-        }
-    }
-}
-
-
-fun isExternalStorageReadOnly(): Boolean {
-    return Environment.MEDIA_MOUNTED_READ_ONLY == Environment.getExternalStorageState()
-}
-
-fun isExternalStorageAvailable(): Boolean {
-    return Environment.MEDIA_MOUNTED == Environment.getExternalStorageState()
-}
 
 @Composable
 fun NotesScreen(
@@ -190,8 +135,6 @@ fun NotesScreen(
                         }
                     }
                 }
-
-
             },
             content = {
                 Scaffold(
@@ -216,14 +159,14 @@ fun NotesScreen(
                         })
                     }
                 ) { paddings ->
-                    val notes by viewModel.allNotes.collectAsState(initial = emptyList())
+                    //val notes by viewModel.allNotes.collectAsState(initial = emptyList())
                     var isRefreshing by remember { mutableStateOf(false) }
                     var noteToDelete by remember {
                         mutableStateOf<Note?>(null)
                     }
 
                     PullToRefreshLazyColumn(
-                        items = notes,
+                        items = notesState.value,
                         content = { note ->
                             NoteItem(note = note,
                                 onClick = openNote,
