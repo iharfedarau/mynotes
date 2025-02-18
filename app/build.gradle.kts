@@ -108,9 +108,6 @@ dependencies {
     implementation(libs.androidx.hilt.navigation.compose)
     ksp(libs.hilt.android.compiler)
 
-    //Compose Multiplatform File Picker
-    implementation(libs.mpfilepicker)
-
     // For instrumentation tests
     androidTestImplementation(libs.hilt.android.testing)
     kspAndroidTest(libs.hilt.compiler)

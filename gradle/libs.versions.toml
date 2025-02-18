@@ -42,7 +42,6 @@ retrofit = { module = "com.squareup.retrofit2:retrofit", version.ref = "retrofit
 swipe = { module = "me.saket.swipe:swipe", version.ref = "swipeVersion" }
 navigation-compose = { module = "androidx.navigation:navigation-compose", version.ref = "composeNavigationVersion" }
 kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "serializationVersion"}
-mpfilepicker = { module = "com.darkrockstudios:mpfilepicker", version.ref = "mpfilepickerVersion"}
 
 [plugins]
 android-application = {id = "com.android.application", version.ref = "androidApplicationVersion"}
