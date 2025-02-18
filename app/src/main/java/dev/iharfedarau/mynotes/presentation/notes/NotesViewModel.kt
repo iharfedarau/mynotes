@@ -64,10 +64,24 @@ class NotesViewModel @Inject constructor(
         state = state.copy(inProgress = true)
 
         viewModelScope.launch {
-            val notes = exporter.import(absDirPath)
-            notes?.let {
+            allNotes.firstOrNull()?.let { notes ->
+                for (note in notes) {
+                    note.alarmDate?.let {
+                        alarmScheduler.cancel(AlarmItem(it, note.alarmMessage))
+                    }
+                    val noteId = note.id
+                    noteId?.let {
+                        repository.delete(noteId)
+                    }
+                }
+            }
+
+            exporter.import(absDirPath)?.let {
                 for (note in it) {
-                    //insert(note)
+                    repository.insert(note)
+                    note.alarmDate?.let {
+                        alarmScheduler.schedule(AlarmItem(it, note.alarmMessage))
+                    }
                 }
             }
 

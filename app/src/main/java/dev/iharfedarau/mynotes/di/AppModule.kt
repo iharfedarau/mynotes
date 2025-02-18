@@ -33,7 +33,7 @@ class  AppModule {
 
     @Provides
     @Singleton
-    fun provideExporter(): NotesExporter {
-        return JsonNotesExporter()
+    fun provideExporter(@ApplicationContext context: Context): NotesExporter {
+        return JsonNotesExporter(context)
     }
 }

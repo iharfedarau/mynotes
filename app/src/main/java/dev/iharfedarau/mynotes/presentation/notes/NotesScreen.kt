@@ -1,8 +1,11 @@
 package dev.iharfedarau.mynotes.presentation.notes
 
+import android.content.Intent
 import android.net.Uri
 import android.os.Environment
-import android.util.Log
+import android.provider.DocumentsContract
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -22,7 +25,6 @@ import androidx.compose.material3.NavigationDrawerItemDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberDrawerState
-
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -35,18 +37,67 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import androidx.core.net.toFile
-import androidx.core.net.toUri
-import dev.iharfedarau.mynotes.domain.repository.Note
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.darkrockstudios.libraries.mpfilepicker.DirectoryPicker
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
 import dev.iharfedarau.mynotes.R
+import dev.iharfedarau.mynotes.domain.repository.Note
 import dev.iharfedarau.mynotes.presentation.dialogs.CustomAlertDialog
 import dev.iharfedarau.mynotes.presentation.notes.drawer.DrawerAction
-import java.io.File
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import java.util.Calendar
+
+//https://developer.android.com/training/data-storage/shared/documents-files#create-file
+enum class FilePickerMode {
+    CreateFile,
+    OpenFile,
+}
+
+@Composable
+fun FilePicker(
+    show: Boolean,
+    mode: FilePickerMode,
+    onFileHandled: (FilePickerMode, Uri?) -> Unit
+) {
+    val launcher =
+        rememberLauncherForActivityResult(contract = ActivityResultContracts.StartActivityForResult()) { result ->
+            onFileHandled(mode, result.data?.data)
+        }
+
+    val downloadDirPath =
+        Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).toString()
+    val intent = Intent().apply {
+        when (mode) {
+            FilePickerMode.CreateFile -> {
+                action = Intent.ACTION_CREATE_DOCUMENT
+                putExtra(Intent.EXTRA_TITLE, "mynotes_backup.json")
+            }
+
+            FilePickerMode.OpenFile -> {
+                action = Intent.ACTION_OPEN_DOCUMENT
+            }
+        }
+        addCategory(Intent.CATEGORY_OPENABLE)
+        type = "application/json"
+
+        // Optionally, specify a URI for the directory that should be opened in
+        // the system file picker before your app creates the document.
+        putExtra(DocumentsContract.EXTRA_INITIAL_URI, Uri.parse(downloadDirPath))
+    }
+    LaunchedEffect(show) {
+        if (show) {
+            launcher.launch(intent)
+        }
+    }
+}
+
+
+fun isExternalStorageReadOnly(): Boolean {
+    return Environment.MEDIA_MOUNTED_READ_ONLY == Environment.getExternalStorageState()
+}
+
+fun isExternalStorageAvailable(): Boolean {
+    return Environment.MEDIA_MOUNTED == Environment.getExternalStorageState()
+}
 
 @Composable
 fun NotesScreen(
@@ -55,37 +106,40 @@ fun NotesScreen(
 ) {
     val scope = rememberCoroutineScope()
     val drawerState = rememberDrawerState(DrawerValue.Closed)
-    var showDirPicker by remember { mutableStateOf(false) }
-    var export by remember { mutableStateOf(false) }
 
-    if (showDirPicker) {
-        DirectoryPicker(showDirPicker) { path ->
-            path?.let {
-                if (export) {
-                    viewModel.onUiAction(NotesAction.Export(path.toUri()))
-                } else {
-                    viewModel.onUiAction(NotesAction.Import(path.toUri()))
+    var showPicker by remember { mutableStateOf(false) }
+    var pickerMode by remember { mutableStateOf(FilePickerMode.CreateFile) }
+
+    FilePicker(showPicker, pickerMode) { mode, uri ->
+        uri?.let {
+            when (mode) {
+                FilePickerMode.CreateFile -> {
+                    viewModel.onUiAction(NotesAction.Export(uri))
+                }
+
+                FilePickerMode.OpenFile -> {
+                    viewModel.onUiAction(NotesAction.Import(uri))
                 }
             }
-            showDirPicker = false
         }
+        showPicker = false
     }
 
-
     val items = listOf(
-        DrawerAction.Export({
-            export = true
-            showDirPicker = true
-
-        }),
-        DrawerAction.Import({
-            export = false
-            showDirPicker = true
-        }),
-        DrawerAction.About({
+        DrawerAction.Export {
+            pickerMode = FilePickerMode.CreateFile
+            showPicker = true
             scope.launch { drawerState.close() }
 
-        })
+        },
+        DrawerAction.Import{
+            pickerMode = FilePickerMode.OpenFile
+            showPicker = true
+            scope.launch { drawerState.close() }
+        },
+        DrawerAction.About{
+            scope.launch { drawerState.close() }
+        }
     )
     val selectedItem = remember { mutableStateOf(items.last()) }
 
@@ -96,6 +150,8 @@ fun NotesScreen(
             }
         }
     }
+
+    val notesState =  viewModel.allNotes.collectAsState(initial = emptyList())
 
     if (viewModel.state.inProgress) {
         Box(
@@ -117,16 +173,21 @@ fun NotesScreen(
                 ModalDrawerSheet {
                     Spacer(Modifier.height(12.dp))
                     items.forEach {
-                        NavigationDrawerItem(
-                            icon = { Icon(it.icon, contentDescription = null) },
-                            label = { Text(stringResource(it.textResId) + if (it.extraText != null) ": ${it.extraText}" else "") },
-                            selected = it == selectedItem.value,
-                            onClick = {
-                                it.onClick()
-                                selectedItem.value = it
-                            },
-                            modifier = Modifier.padding(NavigationDrawerItemDefaults.ItemPadding)
-                        )
+                        if ((it is DrawerAction.Export && notesState.value.isNotEmpty() && isExternalStorageAvailable() && !isExternalStorageReadOnly()) ||
+                            (it is DrawerAction.Import && isExternalStorageAvailable()) ||
+                            it is DrawerAction.About
+                        ) {
+                            NavigationDrawerItem(
+                                icon = { Icon(it.icon, contentDescription = null) },
+                                label = { Text(stringResource(it.textResId) + if (it.extraText != null) ": ${it.extraText}" else "") },
+                                selected = it == selectedItem.value,
+                                onClick = {
+                                    it.onClick()
+                                    selectedItem.value = it
+                                },
+                                modifier = Modifier.padding(NavigationDrawerItemDefaults.ItemPadding)
+                            )
+                        }
                     }
                 }
 
