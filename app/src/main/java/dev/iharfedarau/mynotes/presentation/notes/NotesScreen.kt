@@ -88,17 +88,17 @@ fun NotesScreen(
     )
     val selectedItem = remember { mutableStateOf(items.last()) }
 
-    LaunchedEffect(key1 = viewModel.state.insertedNoteId) {
-        viewModel.state.insertedNoteId?.let {
+    val state = viewModel.state.collectAsState()
+
+    LaunchedEffect(key1 = state.value.insertedNoteId) {
+        state.value.insertedNoteId?.let {
             scope.launch {
                 openNote(it)
             }
         }
     }
 
-    val notesState =  viewModel.allNotes.collectAsState(initial = emptyList())
-
-    if (viewModel.state.inProgress) {
+    if (state.value.inProgress) {
         Box(
             modifier = Modifier.fillMaxSize(),
             contentAlignment = Alignment.Center
@@ -118,7 +118,7 @@ fun NotesScreen(
                 ModalDrawerSheet {
                     Spacer(Modifier.height(12.dp))
                     items.forEach {
-                        if ((it is DrawerAction.Export && notesState.value.isNotEmpty() && isExternalStorageAvailable() && !isExternalStorageReadOnly()) ||
+                        if ((it is DrawerAction.Export && state.value.notes.isNotEmpty() && isExternalStorageAvailable() && !isExternalStorageReadOnly()) ||
                             (it is DrawerAction.Import && isExternalStorageAvailable()) ||
                             it is DrawerAction.About
                         ) {
@@ -166,7 +166,7 @@ fun NotesScreen(
                     }
 
                     PullToRefreshLazyColumn(
-                        items = notesState.value,
+                        items = state.value.notes,
                         content = { note ->
                             NoteItem(note = note,
                                 onClick = openNote,
