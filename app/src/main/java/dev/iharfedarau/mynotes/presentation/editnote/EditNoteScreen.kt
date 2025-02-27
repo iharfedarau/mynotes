@@ -1,5 +1,6 @@
 package dev.iharfedarau.mynotes.presentation.editnote
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -71,7 +72,9 @@ fun RootEditNoteScreen(
         uiAction = {
             when (it) {
                 EditNoteAction.GoBack -> {
-                    navController.navigate(NotesScreenRoute)
+                    navController.navigate(NotesScreenRoute) {
+                        popUpTo(navController.graph.id)
+                    }
                 }
 
                 else -> {
@@ -335,6 +338,10 @@ fun EditNoteScreen(
                 }
             }
         )
+
+        BackHandler {
+            uiAction(EditNoteAction.GoBack)
+        }
     }
 }
 
