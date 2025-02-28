@@ -1,6 +1,6 @@
 [versions]
 kotlinVersion = "2.1.10"
-androidApplicationVersion = "8.8.1"
+androidApplicationVersion = "8.8.2"
 composeBomVersion = "2025.02.00"
 coreKtxVersion = "1.15.0"
 coreSplashscreenVersion = "1.0.1"
