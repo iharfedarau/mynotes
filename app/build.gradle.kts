@@ -1,5 +1,3 @@
-import java.io.ByteArrayOutputStream
-
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.jetbrains.kotlin.android)
@@ -12,25 +10,23 @@ plugins {
 
 val isNetworkServiceAvailable = "isNetworkServiceAvailable"
 
-fun getCurrentCommit(): String {
-    val stdout = ByteArrayOutputStream()
-    exec {
+fun getCurrentCommit(): Provider<String> {
+    return project.providers.exec {
         commandLine("git", "rev-parse", "--short", "HEAD")
-        standardOutput = stdout
-    }
-    return stdout.toString().trim()
+    }.standardOutput.asText.map { it.trim() }
 }
 
 android {
     namespace = "dev.iharfedarau.mynotes"
-    compileSdk = 35
+    compileSdk = 36
 
     defaultConfig {
         applicationId = "dev.iharfedarau.mynotes"
         minSdk = 29
         targetSdk = 35
         versionCode = 1
-        versionName = getCurrentCommit()
+        // `versionName` can accept a Provider directly
+        versionName = getCurrentCommit().get()
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
@@ -74,6 +70,9 @@ dependencies {
     //Jetpack compose
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.androidx.material3)
+
+    // Accompanist
+    implementation(libs.accompanist.permissions)
 
     // Lifecycle
     implementation(libs.androidx.lifecycle.runtime.ktx)
