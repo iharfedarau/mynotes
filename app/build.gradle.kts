@@ -10,9 +10,9 @@ plugins {
 
 val isNetworkServiceAvailable = "isNetworkServiceAvailable"
 
-fun getCurrentCommit(): Provider<String> {
+fun getVersion(): Provider<String> {
     return project.providers.exec {
-        commandLine("git", "rev-parse", "--short", "HEAD")
+        commandLine("git", "describe", "--tags", "--always")
     }.standardOutput.asText.map { it.trim() }
 }
 
@@ -26,7 +26,7 @@ android {
         targetSdk = 35
         versionCode = 1
         // `versionName` can accept a Provider directly
-        versionName = getCurrentCommit().get()
+        versionName = getVersion().get()
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
