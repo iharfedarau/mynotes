@@ -70,6 +70,7 @@ dependencies {
     //Jetpack compose
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.androidx.material3)
+    implementation(libs.androidx.materialIcons3)
 
     // Accompanist
     implementation(libs.accompanist.permissions)
@@ -105,6 +106,7 @@ dependencies {
     //DI
     implementation(libs.hilt.android)
     implementation(libs.androidx.hilt.navigation.compose)
+    implementation(libs.androidx.hilt.lifecycle.compose)
     ksp(libs.hilt.android.compiler)
 
     // For instrumentation tests
